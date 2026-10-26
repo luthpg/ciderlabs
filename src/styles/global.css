@@ -340,14 +340,99 @@
     @apply mt-4 text-center text-[9px] text-primary;
   }
   .visual-badge {
-    @apply absolute bottom-5 right-5 rounded-lg bg-secondary px-4 py-2 text-xs font-bold text-ink shadow-lg;
+    @apply absolute bottom-5 right-5 rounded-lg bg-secondary px-4 py-2 text-xs font-bold text-[#1d3429] shadow-lg;
     transform: rotate(4deg);
   }
   .mini-visual {
     @apply px-6 py-5 text-xs leading-7;
   }
+  .featured-visual {
+    @apply grid place-items-center px-8 py-12 text-xs leading-7;
+    min-height: 300px;
+  }
+  .surface-visual {
+    @apply bg-mint-deep;
+  }
+  .visual-frame {
+    @apply w-full max-w-sm rounded-xl border border-line bg-card p-3.5 shadow-sm;
+  }
+  .visual-frame-bar {
+    @apply mb-3 flex items-center justify-between gap-2 border-b border-line pb-2 text-[10px];
+  }
+  .visual-dots {
+    @apply tracking-widest text-secondary;
+  }
+  .visual-address {
+    @apply truncate font-mono text-[10px] text-muted;
+  }
+  .visual-pill {
+    @apply rounded bg-mint px-1.5 py-0.5 text-[9px] font-bold text-primary;
+  }
+  .visual-frame-body {
+    @apply grid gap-2.5;
+  }
+  .visual-app-head {
+    @apply flex items-center justify-between gap-2 text-xs;
+  }
+  .visual-app-head strong {
+    @apply truncate font-bold text-ink;
+  }
+  .visual-status {
+    @apply text-[10px] font-bold text-primary;
+  }
+  .visual-chip-row {
+    @apply flex flex-wrap gap-1.5;
+  }
+  .visual-chip {
+    @apply rounded border border-line bg-surface px-2 py-0.5 text-[10px] text-body;
+  }
+  .visual-chat-list {
+    @apply grid gap-2;
+  }
+  .visual-chat-bubble {
+    @apply rounded-lg bg-mint px-3 py-2 leading-snug;
+  }
+  .visual-chat-bubble small {
+    @apply block text-[9px] text-muted;
+  }
+  .visual-chat-bubble b {
+    @apply text-xs text-ink;
+  }
+  .visual-api-bar {
+    @apply mb-2 flex items-center gap-2 text-[10px];
+  }
+  .visual-method {
+    @apply rounded bg-secondary px-1.5 py-0.5 font-mono font-bold text-[#1d3429];
+  }
+  .visual-ok {
+    @apply ml-auto font-mono text-primary;
+  }
+  .visual-metrics {
+    @apply grid gap-2;
+  }
+  .visual-metric {
+    @apply grid grid-cols-[72px_1fr] items-center gap-2 text-[10px];
+  }
+  .visual-metric small {
+    @apply truncate text-muted;
+  }
+  .visual-bar {
+    @apply block h-2 rounded-full bg-primary/75;
+  }
+  .visual-flow {
+    @apply mt-2 flex flex-wrap items-center gap-2;
+  }
+  .visual-flow-step {
+    @apply flex items-center gap-2;
+  }
+  .visual-flow-node {
+    @apply rounded-lg border border-line bg-card px-2.5 py-1 text-[11px] font-bold text-ink;
+  }
+  .visual-flow-arrow {
+    @apply text-xs text-muted;
+  }
   .terminal-visual {
-    @apply bg-primary-dark text-mint-deep;
+    @apply bg-terminal-bg text-terminal-fg;
   }
   .terminal-visual b {
     @apply text-secondary;

@@ -40,12 +40,32 @@ export const librarySchema = base.extend({
   order: z.number().int(),
 });
 
+export const projectVisualValues = [
+  'poohma',
+  'webapp',
+  'browser',
+  'mobile',
+  'chat',
+  'api',
+  'terminal',
+  'code',
+  'dashboard',
+  'automation',
+  'extension',
+  'security',
+] as const;
+
+const projectVisual = z.enum(projectVisualValues);
+
 export const projectSchema = base
   .extend({
     name: text,
     category: text,
     description: text,
-    visual: z.enum(['poohma', 'terminal', 'code']),
+    visual: z.union([
+      projectVisual,
+      z.tuple([projectVisual]).transform(([value]) => value),
+    ]),
     featured: z.boolean().default(false),
     tags,
     url: optional(url),
