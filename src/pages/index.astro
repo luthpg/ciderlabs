@@ -1,16 +1,31 @@
 ---
+import ArticleList from '../components/ArticleList';
+import { About, Hero, Libraries, Projects } from '../components/HomeSections';
+import { site } from '../config/site';
+import Base from '../layouts/Base.astro';
+import { getContent } from '../lib/cms.server';
+
+const content = await getContent();
 ---
 
-<html lang="en">
-	<head>
-		<meta charset="utf-8" />
-		<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-		<link rel="icon" href="/favicon.ico" />
-		<meta name="viewport" content="width=device-width" />
-		<meta name="generator" content={Astro.generator} />
-		<title>Astro</title>
-	</head>
-	<body>
-		<h1>Astro</h1>
-	</body>
-</html>
+<Base>
+  <Hero counts={content} />
+  <Projects projects={content.projects} />
+
+  <section id="writing" class="writing-section">
+    <div class="shell section">
+      <div class="section-heading">
+        <div>
+          <p class="eyebrow">02 / WRITING</p>
+          <h2>つくりながら、考えたこと。</h2>
+        </div>
+        <a class="text-link" href={site.zenn}>Zennの記事一覧 ↗</a>
+      </div>
+
+      <ArticleList articles={content.articles} client:visible />
+    </div>
+  </section>
+
+  <Libraries libraries={content.libraries} />
+  <About />
+</Base>

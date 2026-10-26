@@ -1,0 +1,75 @@
+{
+  "apiFields": [
+    {
+      "fieldId": "name",
+      "name": "名前",
+      "kind": "text",
+      "required": true
+    },
+    {
+      "fieldId": "category",
+      "name": "カテゴリ",
+      "kind": "text",
+      "required": true
+    },
+    {
+      "fieldId": "description",
+      "name": "説明",
+      "kind": "textArea",
+      "required": true
+    },
+    {
+      "fieldId": "visual",
+      "name": "表示テンプレート",
+      "kind": "text",
+      "required": true,
+      "patternMatchValidation": {
+        "regexp": {
+          "pattern": "^(poohma|terminal|code)$"
+        }
+      }
+    },
+    {
+      "fieldId": "featured",
+      "name": "大きく表示",
+      "kind": "boolean",
+      "required": false,
+      "initialValue": false
+    },
+    {
+      "fieldId": "tags",
+      "name": "タグ",
+      "kind": "text",
+      "required": false,
+      "description": "カンマ区切り。例: React,TypeScript"
+    },
+    {
+      "fieldId": "url",
+      "name": "公開URL",
+      "kind": "text",
+      "required": false
+    },
+    {
+      "fieldId": "repoUrl",
+      "name": "GitHub URL",
+      "kind": "text",
+      "required": false
+    },
+    {
+      "fieldId": "librarySlug",
+      "name": "導入ガイドのslug",
+      "kind": "text",
+      "required": false,
+      "description": "librariesのslug。urlかこの項目のどちらかを設定"
+    },
+    {
+      "fieldId": "order",
+      "name": "表示順",
+      "kind": "number",
+      "required": true,
+      "description": "整数。小さい順に表示",
+      "initialValue": 1
+    }
+  ],
+  "customFields": []
+}

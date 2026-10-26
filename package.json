@@ -6,12 +6,13 @@
     "node": ">=22.23.4"
   },
   "scripts": {
-    "dev": "astro dev",
-    "build": "astro check && astro build",
+    "dev": "pnpm run content:sync && astro dev",
+    "build": "tsc --noEmit && pnpm run content:sync && astro build",
     "preview": "astro preview",
     "deploy": "wrangler deploy",
     "astro": "astro",
-    "check": "biome check --write"
+    "check": "biome check --write",
+    "content:sync": "node --env-file-if-exists=.env --import tsx scripts/prepare.ts"
   },
   "dependencies": {
     "@astrojs/react": "^7.1.1",
@@ -21,15 +22,17 @@
     "microcms-js-sdk": "^3.6.0",
     "react": "^19.3.1",
     "react-dom": "^19.3.1",
+    "yaml": "^2.9.1",
     "zod": "^4.6.7"
   },
   "devDependencies": {
-    "@astrojs/check": "^0.9.12",
+    "@astrojs/ts-content-mapper": "^0.2.0",
     "@biomejs/biome": "^2.6.3",
     "@tailwindcss/vite": "^4.3.3",
     "@types/react": "^19.3.0",
     "@types/react-dom": "^19.3.0",
     "tailwindcss": "^4.3.3",
+    "tsx": "^4.23.15",
     "typescript": "^7.0.2",
     "wrangler": "^4.152.0",
     "zenn-content-css": "^0.5.8",

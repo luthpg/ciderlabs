@@ -1,0 +1,131 @@
+---
+import type { GetStaticPaths } from 'astro';
+import 'zenn-content-css/lib/index.css';
+
+import { site } from '../../config/site';
+import Base from '../../layouts/Base.astro';
+import { getContent } from '../../lib/cms.server';
+import { docHref, type Library } from '../../lib/content';
+import { renderMarkdown } from '../../lib/markdown.server';
+
+export const getStaticPaths = (async () => {
+  const { libraries } = await getContent();
+
+  return libraries.map((library) => ({
+    params: { slug: library.slug },
+    props: { library },
+  }));
+}) satisfies GetStaticPaths;
+
+interface Props {
+  library: Library;
+}
+
+const { library } = Astro.props;
+const { libraries } = await getContent();
+const { html, headings, hasEmbeds } = await renderMarkdown(library.markdown);
+---
+
+<Base
+  title={`${library.name} の導入ガイド | ${site.name}`}
+  description={library.description}
+>
+  <Fragment slot="head">
+    {
+      hasEmbeds && (
+        <script
+          is:inline
+          src="https://embed.zenn.studio/js/listen-embed-event.js"
+        ></script>
+      )
+    }
+  </Fragment>
+
+  <div class="shell docs-layout">
+    <aside class="docs-sidebar">
+      <a class="back-link" href="/#libraries">← ライブラリ一覧</a>
+      <p class="eyebrow">DOCUMENTATION</p>
+
+      <nav aria-label="ライブラリのドキュメント">
+        {
+          libraries.map(item => (
+            <a
+              href={docHref(item.slug)}
+              aria-current={item.slug === library.slug ? 'page' : undefined}
+            >
+              {item.name}
+            </a>
+          ))
+        }
+      </nav>
+    </aside>
+
+    <article class="docs-article">
+      <header class="docs-title">
+        <p class="eyebrow">{library.category} / 導入ガイド</p>
+        <h1>{library.name}</h1>
+        <p class="lead">{library.description}</p>
+
+        <div class="card-links">
+          <a href={library.repoUrl}>GitHub ↗</a>
+          <a href={library.npmUrl}>npm ↗</a>
+        </div>
+
+        <div class="install">
+          <code>{library.command}</code>
+          <button
+            type="button"
+            data-copy={library.command}
+            aria-label="インストールコマンドをコピー"
+          >
+            コピー
+          </button>
+        </div>
+      </header>
+
+      {
+        headings.length > 0 && (
+          <details class="mobile-toc">
+            <summary>このページの内容</summary>
+            <nav aria-label="ページ内の目次">
+              {headings.map(heading => (
+                <a
+                  href={'#' + encodeURIComponent(heading.id)}
+                  data-level={heading.level}
+                >
+                  {heading.text}
+                </a>
+              ))}
+            </nav>
+          </details>
+        )
+      }
+
+      <div class="znc doc-content" set:html={html} />
+    </article>
+
+    <aside class="desktop-toc">
+      {
+        headings.length > 0 && (
+          <nav aria-label="ページ内の目次">
+            <p class="eyebrow">このページの内容</p>
+            {headings.map(heading => (
+              <a
+                href={'#' + encodeURIComponent(heading.id)}
+                data-level={heading.level}
+              >
+                {heading.text}
+              </a>
+            ))}
+          </nav>
+        )
+      }
+    </aside>
+  </div>
+
+  <script>
+    if (document.querySelector('embed-katex')) {
+      import('zenn-embed-elements');
+    }
+  </script>
+</Base>

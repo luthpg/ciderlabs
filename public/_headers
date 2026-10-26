@@ -1,0 +1,11 @@
+/_astro/*
+  Cache-Control: public, max-age=31536000, immutable
+
+/search.json
+  Cache-Control: public, max-age=0, must-revalidate
+
+/reactions.json
+  Cache-Control: public, max-age=0, must-revalidate
+
+/article-assets/*
+  Cache-Control: public, max-age=31536000, immutable

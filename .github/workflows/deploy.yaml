@@ -1,0 +1,66 @@
+name: Deploy
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+  repository_dispatch:
+    types:
+      - microcms-update
+      - articles-update
+  schedule:
+    - cron: '17 21 * * *'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: cider-lab-production
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Checkout article repository
+        uses: actions/checkout@v4
+        with:
+          repository: ${{ vars.CONTENT_REPOSITORY }}
+          ref: ${{ github.event.action == 'articles-update' && github.event.client_payload.content_sha || vars.CONTENT_REF || 'main' }}
+          path: content-source
+          token: ${{ secrets.CONTENT_READ_TOKEN || github.token }}
+          persist-credentials: false
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+
+      - run: npm ci
+
+      - uses: actions/cache/restore@v4
+        with:
+          path: .cache/reactions.json
+          key: reactions-v1-${{ github.run_id }}-${{ github.run_attempt }}
+          restore-keys: reactions-v1-
+
+      - run: npm run build
+        env:
+          MICROCMS_SERVICE_DOMAIN: ${{ secrets.MICROCMS_SERVICE_DOMAIN }}
+          MICROCMS_API_KEY: ${{ secrets.MICROCMS_API_KEY }}
+          CONTENT_DIR: ./content-source
+          QIITA_TOKEN: ${{ secrets.QIITA_TOKEN }}
+          PREVIOUS_REACTIONS_URL: ${{ vars.PREVIOUS_REACTIONS_URL }}
+
+      - uses: actions/cache/save@v4
+        with:
+          path: .cache/reactions.json
+          key: reactions-v1-${{ github.run_id }}-${{ github.run_attempt }}
+
+      - run: npm run deploy
+        env:
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}

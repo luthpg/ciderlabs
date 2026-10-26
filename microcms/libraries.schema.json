@@ -1,0 +1,78 @@
+{
+  "apiFields": [
+    {
+      "fieldId": "slug",
+      "name": "URLのslug",
+      "kind": "text",
+      "required": true,
+      "isUnique": true,
+      "patternMatchValidation": {
+        "regexp": {
+          "pattern": "^[a-z0-9]+(-[a-z0-9]+)*$"
+        }
+      }
+    },
+    {
+      "fieldId": "name",
+      "name": "パッケージ名",
+      "kind": "text",
+      "required": true
+    },
+    {
+      "fieldId": "category",
+      "name": "カテゴリ",
+      "kind": "text",
+      "required": true
+    },
+    {
+      "fieldId": "description",
+      "name": "説明",
+      "kind": "textArea",
+      "required": true
+    },
+    {
+      "fieldId": "command",
+      "name": "インストールコマンド",
+      "kind": "text",
+      "required": true
+    },
+    {
+      "fieldId": "repoUrl",
+      "name": "GitHub URL",
+      "kind": "text",
+      "required": true,
+      "patternMatchValidation": {
+        "regexp": {
+          "pattern": "^https://"
+        }
+      }
+    },
+    {
+      "fieldId": "npmUrl",
+      "name": "npm URL",
+      "kind": "text",
+      "required": true,
+      "patternMatchValidation": {
+        "regexp": {
+          "pattern": "^https://"
+        }
+      }
+    },
+    {
+      "fieldId": "markdown",
+      "name": "導入ガイド本文",
+      "kind": "textArea",
+      "required": true,
+      "description": "Zenn記法のMarkdown原文"
+    },
+    {
+      "fieldId": "order",
+      "name": "表示順",
+      "kind": "number",
+      "required": true,
+      "description": "整数。小さい順に表示",
+      "initialValue": 1
+    }
+  ],
+  "customFields": []
+}

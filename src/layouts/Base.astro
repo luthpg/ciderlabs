@@ -1,0 +1,118 @@
+---
+import '../styles/global.css';
+import Search from '../components/Search';
+import { navigation, site } from '../config/site';
+
+interface Props {
+  title?: string;
+  description?: string;
+  noindex?: boolean;
+  type?: 'website' | 'article';
+}
+
+const {
+  title = site.title,
+  description = site.description,
+  noindex = false,
+  type = 'website',
+} = Astro.props;
+
+const canonical = new URL(Astro.url.pathname, Astro.site);
+---
+
+<!doctype html>
+<html lang="ja">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="description" content={description} />
+    <meta name="theme-color" content="#35654e" />
+    {noindex && <meta name="robots" content="noindex" />}
+
+    <title>{title}</title>
+    <link rel="canonical" href={canonical} />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+
+    <meta property="og:type" content={type} />
+    <meta property="og:locale" content="ja_JP" />
+    <meta property="og:site_name" content={site.name} />
+    <meta property="og:title" content={title} />
+    <meta property="og:description" content={description} />
+    <meta property="og:url" content={canonical} />
+
+    <slot name="head" />
+  </head>
+
+  <body>
+    <a class="skip-link" href="#main">本文へ移動</a>
+
+    <header class="site-header">
+      <div class="shell header-inner">
+        <a class="brand" href="/" aria-label="cider lab ホーム">
+          <span class="brand-mark" aria-hidden="true">
+            c<span>●</span>
+          </span>
+          {site.name}<span class="brand-dot">.</span>
+        </a>
+
+        <nav class="desktop-nav" aria-label="メインナビゲーション">
+          {navigation.map(item => (
+            <a href={item.href}>{item.label}</a>
+          ))}
+        </nav>
+
+        <div class="header-actions">
+          <Search client:load />
+
+          <details class="mobile-menu">
+            <summary aria-label="メニューを開く">☰</summary>
+            <nav aria-label="モバイルナビゲーション">
+              {navigation.map(item => (
+                <a href={item.href}>{item.label}</a>
+              ))}
+            </nav>
+          </details>
+        </div>
+      </div>
+    </header>
+
+    <main id="main"><slot /></main>
+
+    <footer class="site-footer">
+      <div class="shell footer-inner">
+        <div>
+          <a class="brand" href="/">
+            {site.name}<span class="brand-dot">.</span>
+          </a>
+          <p>つくる、書く、共有する。</p>
+        </div>
+
+        <nav aria-label="外部リンク">
+          <a href={site.github}>GitHub ↗</a>
+          <a href={site.zenn}>Zenn ↗</a>
+        </nav>
+
+        <small>© {new Date().getUTCFullYear()} {site.author}</small>
+      </div>
+    </footer>
+
+    <p
+      id="copy-status"
+      class="toast"
+      role="status"
+      aria-live="polite"
+    ></p>
+
+    <script>
+      import '../scripts/copy';
+
+      document
+        .querySelectorAll<HTMLAnchorElement>('.mobile-menu a')
+        .forEach(link => {
+          link.addEventListener('click', () => {
+            link.closest('details')?.removeAttribute('open');
+          });
+        });
+    </script>
+  </body>
+</html>

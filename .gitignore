@@ -22,3 +22,9 @@ pnpm-debug.log*
 
 # jetbrains setting folder
 .idea/
+
+# auto generated files
+content-source/
+public/article-assets/
+public/reactions.json
+.generated/
