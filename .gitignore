@@ -28,3 +28,4 @@ content-source/
 public/article-assets/
 public/reactions.json
 .generated/
+.cache/

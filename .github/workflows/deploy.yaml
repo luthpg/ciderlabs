@@ -9,7 +9,7 @@ on:
       - microcms-update
       - articles-update
   schedule:
-    - cron: '17 21 * * *'
+    - cron: "17 21 * * *"
 
 permissions:
   contents: read

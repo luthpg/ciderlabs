@@ -7,12 +7,13 @@
   },
   "scripts": {
     "dev": "pnpm run content:sync && astro dev",
-    "build": "tsc --noEmit && pnpm run content:sync && astro build",
+    "typecheck": "tsc --noEmit",
+    "build": "pnpm run typecheck && pnpm run content:sync && astro build",
     "preview": "astro preview",
     "deploy": "wrangler deploy",
     "astro": "astro",
     "check": "biome check --write",
-    "content:sync": "node --env-file-if-exists=.env --import tsx scripts/prepare.ts"
+    "content:sync": "node --env-file-if-exists=.env --import tsx scripts/prepare.ts --refresh-reactions"
   },
   "dependencies": {
     "@astrojs/react": "^7.1.1",
