@@ -29,6 +29,7 @@ const { html, headings, hasEmbeds } = await renderMarkdown(library.markdown);
 <Base
   title={`${library.name} の導入ガイド | ${site.name}`}
   description={library.description}
+  ogImage={`/og/docs/${library.slug}.png`}
 >
   <Fragment slot="head">
     {

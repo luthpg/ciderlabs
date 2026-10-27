@@ -1,12 +1,12 @@
-import { readFile, readdir, realpath } from 'node:fs/promises';
+import { readdir, readFile, realpath } from 'node:fs/promises';
 import path from 'node:path';
-import { parse as parseYaml } from 'yaml';
 import { load } from 'cheerio';
+import { parse as parseYaml } from 'yaml';
 import { z } from 'zod';
 import { renderMarkdown } from '../src/lib/markdown.server.ts';
 import {
-  sourceIndexSchema,
   type SourceArticle,
+  sourceIndexSchema,
 } from '../src/lib/schema.server.ts';
 
 const text = z.string().trim().min(1);
@@ -57,10 +57,10 @@ export async function resolveInside(root: string, relative: string) {
 
   if (
     remainder === '..' ||
-    remainder.startsWith('..' + path.sep) ||
+    remainder.startsWith(`..${path.sep}`) ||
     path.isAbsolute(remainder)
   ) {
-    throw new Error('記事リポジトリ外の参照です: ' + relative);
+    throw new Error(`記事リポジトリ外の参照です: ${relative}`);
   }
 
   return file;
@@ -75,7 +75,7 @@ export async function readMarkdown(file: string) {
   const front = raw.match(/^---\r?\n([\s\S]*?)\r?\n---(?:\r?\n|$)/);
 
   if (!front) {
-    throw new Error('YAML frontmatterが必要です: ' + file);
+    throw new Error(`YAML frontmatterが必要です: ${file}`);
   }
 
   return {
@@ -91,20 +91,20 @@ function zennDate(value: string, file: string) {
   const match = /^(\d{4}-\d{2}-\d{2})(?: (\d{2}:\d{2}))?$/.exec(value);
 
   if (!match) {
-    throw new Error('published_atの形式が不正です: ' + file);
+    throw new Error(`published_atの形式が不正です: ${file}`);
   }
 
-  const local = match[1] + 'T' + (match[2] ?? '00:00') + ':00';
-  const parsed = Date.parse(local + '+09:00');
+  const local = `${match[1]}T${match[2] ?? '00:00'}:00`;
+  const parsed = Date.parse(`${local}+09:00`);
 
   if (
     !Number.isFinite(parsed) ||
     new Date(parsed + 9 * 60 * 60 * 1000).toISOString().slice(0, 19) !== local
   ) {
-    throw new Error('published_atの日付が不正です: ' + file);
+    throw new Error(`published_atの日付が不正です: ${file}`);
   }
 
-  return local + '+09:00';
+  return `${local}+09:00`;
 }
 
 async function excerpt(body: string, title: string) {
@@ -127,7 +127,7 @@ async function excerpt(body: string, title: string) {
   const characters = Array.from(result || title);
 
   return characters.length > 160
-    ? characters.slice(0, 159).join('') + '…'
+    ? `${characters.slice(0, 159).join('')}…`
     : characters.join('');
 }
 
@@ -157,7 +157,7 @@ export async function buildSourceIndex(
 
   for (const key of Object.keys(overrides)) {
     if (!known.has(key)) {
-      throw new Error('原稿のないoverrideです: ' + key);
+      throw new Error(`原稿のないoverrideです: ${key}`);
     }
   }
 
@@ -168,10 +168,10 @@ export async function buildSourceIndex(
     const stem = name.slice(0, -3);
 
     if (!/^[a-z0-9_-]+$/.test(stem)) {
-      throw new Error('不正な記事ファイル名です: ' + name);
+      throw new Error(`不正な記事ファイル名です: ${name}`);
     }
 
-    const file = 'articles/' + name;
+    const file = `articles/${name}`;
     const source = await readMarkdown(await resolveInside(root, file));
 
     const meta = zennSchema.parse(source.meta);
@@ -187,7 +187,7 @@ export async function buildSourceIndex(
 
     if (!publishedAt) {
       throw new Error(
-        '公開日をpublished_atまたはoverrideに設定してください: ' + file,
+        `公開日をpublished_atまたはoverrideに設定してください: ${file}`,
       );
     }
 
@@ -198,7 +198,7 @@ export async function buildSourceIndex(
     let qiita: SourceArticle['qiita'] = null;
 
     if (override.qiitaFile !== null) {
-      const relative = override.qiitaFile ?? 'qiita/public/' + name;
+      const relative = override.qiitaFile ?? `qiita/public/${name}`;
 
       let qiitaPath: string | undefined;
 
@@ -217,7 +217,7 @@ export async function buildSourceIndex(
 
         if (!metadata.private && metadata.id) {
           if (qiitaIds.has(metadata.id)) {
-            throw new Error('Qiita IDが重複しています: ' + metadata.id);
+            throw new Error(`Qiita IDが重複しています: ${metadata.id}`);
           }
 
           qiitaIds.add(metadata.id);
@@ -266,7 +266,7 @@ export async function buildSourceIndex(
     const values = new Set(index.map((article) => article[key]));
 
     if (values.size !== index.length) {
-      throw new Error('記事一覧の' + key + 'が重複しています');
+      throw new Error(`記事一覧の${key}が重複しています`);
     }
   }
 

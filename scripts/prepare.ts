@@ -21,7 +21,7 @@ const articles = await buildArticles(
 
 let snapshot = await readSnapshot('.cache/reactions.json');
 
-if (process.argv.includes('--refresh-reactions')) {
+if (process.argv.includes('--refresh-reactions') || !snapshot) {
   snapshot = await refreshReactions(articles, snapshot, {
     previousUrl: process.env.PREVIOUS_REACTIONS_URL || undefined,
     qiitaToken: process.env.QIITA_TOKEN || undefined,

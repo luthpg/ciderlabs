@@ -57,7 +57,7 @@ export default function Search() {
   const matches = items
     .filter((item) =>
       words.every((word) =>
-        normalize(item.title + ' ' + item.keywords).includes(word),
+        normalize(`${item.title} ${item.keywords}`).includes(word),
       ),
     )
     .slice(0, 12);

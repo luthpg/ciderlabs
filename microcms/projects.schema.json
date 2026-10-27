@@ -21,13 +21,23 @@
     {
       "fieldId": "visual",
       "name": "表示テンプレート",
-      "kind": "text",
+      "kind": "select",
       "required": true,
-      "patternMatchValidation": {
-        "regexp": {
-          "pattern": "^(poohma|terminal|code)$"
-        }
-      }
+      "multipleSelect": false,
+      "selectItems": [
+        { "value": "poohma" },
+        { "value": "webapp" },
+        { "value": "browser" },
+        { "value": "mobile" },
+        { "value": "chat" },
+        { "value": "api" },
+        { "value": "terminal" },
+        { "value": "code" },
+        { "value": "dashboard" },
+        { "value": "automation" },
+        { "value": "extension" },
+        { "value": "security" }
+      ]
     },
     {
       "fieldId": "featured",

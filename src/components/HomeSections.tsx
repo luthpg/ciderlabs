@@ -102,16 +102,65 @@ export function Hero({
   );
 }
 
-function ProjectVisual({ visual }: { visual: Project['visual'] }) {
+function getProjectMeta(project: Project) {
+  const parts = project.name.split(/\s+[-—–]\s+/);
+  const shortName = parts[0]?.trim() || project.name;
+  const subtitle = parts[1]?.trim() || project.category;
+  const slugName =
+    project.librarySlug ??
+    shortName
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, '-')
+      .replace(/^-|-$/g, '');
+  const identName =
+    shortName
+      .replace(/[^a-zA-Z0-9]+(.)/g, (_, chr: string) => chr.toUpperCase())
+      .replace(/^[^a-zA-Z]+/, '')
+      .replace(/^[A-Z]/, (chr) => chr.toLowerCase()) || 'app';
+
+  let host = `${slugName || 'app'}.ciderlabs.link`;
+  if (project.url) {
+    try {
+      host = new URL(project.url).host;
+    } catch {
+      // ignore invalid url
+    }
+  }
+
+  const tags = project.tags.length > 0 ? project.tags : [project.category];
+
+  return {
+    shortName,
+    subtitle,
+    slugName: slugName || 'app',
+    identName,
+    host,
+    tags,
+  };
+}
+
+function ProjectVisual({
+  project,
+  large = false,
+}: {
+  project: Project;
+  large?: boolean;
+}) {
+  const { visual } = project;
+  const { shortName, subtitle, slugName, identName, host, tags } =
+    getProjectMeta(project);
+  const sizeClass = large ? 'featured-visual' : 'mini-visual';
+
   if (visual === 'poohma') {
     return (
       <div className="project-visual poohma-visual" aria-hidden="true">
         <div className="mock-app">
           <div className="mock-nav">
             <strong>
-              PoohMa<span>●</span>
+              {shortName}
+              <span>●</span>
             </strong>
-            <small>わが家のアカウント</small>
+            <small>{subtitle}</small>
           </div>
 
           <p>家族でつかう、をひとつに。</p>
@@ -142,31 +191,230 @@ function ProjectVisual({ visual }: { visual: Project['visual'] }) {
     );
   }
 
+  if (visual === 'webapp' || visual === 'browser') {
+    return (
+      <div
+        className={`project-visual ${sizeClass} surface-visual`}
+        aria-hidden="true"
+      >
+        <div className="visual-frame">
+          <div className="visual-frame-bar">
+            <span className="visual-dots">● ● ●</span>
+            <span className="visual-address">{host}</span>
+            <span className="visual-pill">{project.category}</span>
+          </div>
+          <div className="visual-frame-body">
+            <div className="visual-app-head">
+              <strong>{shortName}</strong>
+              <span className="visual-status">● Ready</span>
+            </div>
+            <div className="visual-chip-row">
+              {tags.slice(0, 3).map((tag) => (
+                <span key={tag} className="visual-chip">
+                  {tag}
+                </span>
+              ))}
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (visual === 'mobile' || visual === 'chat') {
+    return (
+      <div
+        className={`project-visual ${sizeClass} surface-visual`}
+        aria-hidden="true"
+      >
+        <div className="visual-frame">
+          <div className="visual-frame-bar">
+            <span className="visual-status">● {project.category}</span>
+            <span className="visual-address">{shortName}</span>
+          </div>
+          <div className="visual-chat-list">
+            <div className="visual-chat-bubble">
+              <small>{tags[0] ?? project.category}</small>
+              <b>{shortName}</b>
+            </div>
+            <div className="visual-chip-row">
+              {tags.slice(0, 3).map((tag) => (
+                <span key={tag} className="visual-chip">
+                  {tag}
+                </span>
+              ))}
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (visual === 'api') {
+    return (
+      <div
+        className={`project-visual ${sizeClass} terminal-visual`}
+        aria-hidden="true"
+      >
+        <div className="visual-api-bar">
+          <span className="visual-method">POST</span>
+          <code>/api/{slugName}</code>
+          <span className="visual-ok">200 OK</span>
+        </div>
+        <code>
+          <span>{`{ "service": "${shortName}",`}</span>
+          <br />
+          <span>{`  "stack": [${tags
+            .slice(0, 2)
+            .map((t) => `"${t}"`)
+            .join(', ')}] }`}</span>
+        </code>
+      </div>
+    );
+  }
+
+  if (visual === 'dashboard') {
+    return (
+      <div
+        className={`project-visual ${sizeClass} surface-visual`}
+        aria-hidden="true"
+      >
+        <div className="visual-frame">
+          <div className="visual-frame-bar">
+            <strong>{shortName}</strong>
+            <span className="visual-pill">{project.category}</span>
+          </div>
+          <div className="visual-metrics">
+            {tags.slice(0, 3).map((tag, index) => (
+              <div key={tag} className="visual-metric">
+                <small>{tag}</small>
+                <span
+                  className="visual-bar"
+                  style={{ width: `${90 - index * 18}%` }}
+                />
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (visual === 'automation') {
+    const steps = [tags[0] ?? 'Trigger', shortName, tags[1] ?? 'Complete'];
+    return (
+      <div
+        className={`project-visual ${sizeClass} type-visual`}
+        aria-hidden="true"
+      >
+        <small>{project.category.toUpperCase()} WORKFLOW</small>
+        <div className="visual-flow">
+          {steps.map((step, index) => (
+            <div key={step} className="visual-flow-step">
+              <span className="visual-flow-node">{step}</span>
+              {index < steps.length - 1 && (
+                <span className="visual-flow-arrow">→</span>
+              )}
+            </div>
+          ))}
+        </div>
+      </div>
+    );
+  }
+
+  if (visual === 'extension') {
+    return (
+      <div
+        className={`project-visual ${sizeClass} surface-visual`}
+        aria-hidden="true"
+      >
+        <div className="visual-frame">
+          <div className="visual-frame-bar">
+            <span className="visual-pill">🧩 Extension</span>
+            <span className="visual-status">● Active</span>
+          </div>
+          <div className="visual-frame-body">
+            <div className="visual-app-head">
+              <strong>{shortName}</strong>
+              <small>{project.category}</small>
+            </div>
+            <div className="visual-chip-row">
+              {tags.slice(0, 3).map((tag) => (
+                <span key={tag} className="visual-chip">
+                  {tag}
+                </span>
+              ))}
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (visual === 'security') {
+    return (
+      <div
+        className={`project-visual ${sizeClass} surface-visual`}
+        aria-hidden="true"
+      >
+        <div className="visual-frame">
+          <div className="visual-frame-bar">
+            <span className="visual-status">⌁ Protected</span>
+            <span className="visual-pill">{project.category}</span>
+          </div>
+          <div className="visual-frame-body">
+            <div className="visual-app-head">
+              <strong>{shortName}</strong>
+              <code>•••• ••••</code>
+            </div>
+            <div className="visual-chip-row">
+              {tags.slice(0, 3).map((tag) => (
+                <span key={tag} className="visual-chip">
+                  {tag}
+                </span>
+              ))}
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (visual === 'terminal') {
+    const cmd = project.librarySlug
+      ? `npx @ciderjs/${project.librarySlug}`
+      : `run ${slugName} --${(tags[0] ?? 'app').toLowerCase().replace(/[^a-z0-9]+/g, '-')}`;
+    return (
+      <div
+        className={`project-visual ${sizeClass} terminal-visual`}
+        aria-hidden="true"
+      >
+        <code>
+          <span>$ {cmd}</span>
+          <br />✓ {tags[0] ?? project.category} ready
+          <br />✓ {tags[1] ?? 'connected'} configured
+          <br />
+          <b>{shortName} is ready.</b>
+        </code>
+      </div>
+    );
+  }
+
   return (
     <div
-      className={
-        'project-visual mini-visual ' +
-        (visual === 'terminal' ? 'terminal-visual' : 'type-visual')
-      }
+      className={`project-visual ${sizeClass} type-visual`}
       aria-hidden="true"
     >
-      {visual === 'terminal' ? (
-        <code>
-          <span>$ npx @ciderjs/gasbombe</span>
-          <br />✓ template ready
-          <br />✓ clasp configured
-          <br />
-          <b>Let’s build something.</b>
-        </code>
-      ) : (
-        <code>
-          <small>TYPE-SAFE GAS</small>
-          <br />
-          <b>const result = await gas.hello()</b>
-          <br />
-          <span>型がつながる。開発が進む。</span>
-        </code>
-      )}
+      <code>
+        <small>
+          {project.category.toUpperCase()} ·{' '}
+          {tags.slice(0, 2).join(' / ').toUpperCase()}
+        </small>
+        <br />
+        <b>{`const app = await ${identName}.create()`}</b>
+        <br />
+        <span>{subtitle}</span>
+      </code>
     </div>
   );
 }
@@ -179,8 +427,8 @@ function ProjectCard({
   large?: boolean;
 }) {
   return (
-    <article className={'project-card ' + (large ? 'featured' : '')}>
-      <ProjectVisual visual={project.visual} />
+    <article className={`project-card ${large ? 'featured' : ''}`}>
+      <ProjectVisual project={project} large={large} />
 
       <div className="card-body">
         <p className="eyebrow">{project.category}</p>
@@ -271,7 +519,7 @@ export function Libraries({ libraries }: { libraries: Library[] }) {
               <button
                 type="button"
                 data-copy={library.command}
-                aria-label={library.name + 'のインストールコマンドをコピー'}
+                aria-label={`${library.name}のインストールコマンドをコピー`}
               >
                 コピー
               </button>

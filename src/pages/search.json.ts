@@ -11,19 +11,19 @@ export const GET: APIRoute = async () => {
       title: project.name,
       href: projectHref(project),
       kind: 'つくったもの',
-      keywords: project.description + ' ' + project.tags.join(' '),
+      keywords: `${project.description} ${project.tags.join(' ')}`,
     })),
     ...articles.map((article) => ({
       title: article.title,
       href: article.url,
       kind: '技術記事',
-      keywords: article.description + ' ' + article.tags.join(' '),
+      keywords: `${article.description} ${article.tags.join(' ')}`,
     })),
     ...libraries.map((library) => ({
       title: library.name,
       href: docHref(library.slug),
       kind: 'ドキュメント',
-      keywords: library.description + ' ' + library.category,
+      keywords: `${library.description} ${library.category}`,
     })),
   ];
 

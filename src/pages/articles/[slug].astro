@@ -25,6 +25,7 @@ const { article } = Astro.props;
   title={article.title + ' | ' + site.name}
   description={article.description}
   type="article"
+  ogImage={`/og/articles/${article.slug}.png`}
 >
   <Fragment slot="head">
     <meta property="article:published_time" content={article.date} />

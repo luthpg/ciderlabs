@@ -68,7 +68,7 @@ export async function refreshReactions(
 
       if (response.status !== 404) {
         if (!response.ok) {
-          throw new Error('HTTP ' + response.status);
+          throw new Error(`HTTP ${response.status}`);
         }
 
         const deployed = snapshotSchema.parse(await response.json());
@@ -130,8 +130,8 @@ export async function refreshReactions(
 
         const endpoint =
           platform === 'zenn'
-            ? 'https://zenn.dev/api/articles/' + encodeURIComponent(id)
-            : 'https://qiita.com/api/v2/items/' + encodeURIComponent(id);
+            ? `https://zenn.dev/api/articles/${encodeURIComponent(id)}`
+            : `https://qiita.com/api/v2/items/${encodeURIComponent(id)}`;
 
         try {
           const headers: Record<string, string> = {
@@ -139,7 +139,7 @@ export async function refreshReactions(
           };
 
           if (platform === 'qiita' && options.qiitaToken) {
-            headers.Authorization = 'Bearer ' + options.qiitaToken;
+            headers.Authorization = `Bearer ${options.qiitaToken}`;
           }
 
           const response = await fetch(endpoint, {
@@ -155,7 +155,7 @@ export async function refreshReactions(
               blocked.add(platform);
             }
 
-            throw new Error('HTTP ' + response.status);
+            throw new Error(`HTTP ${response.status}`);
           }
 
           const raw: unknown = await response.json();
@@ -194,7 +194,7 @@ export async function refreshReactions(
           next[platform] = reaction;
         } catch {
           console.warn(
-            platform + ': ' + article.id + ' の取得失敗。前回値を保持します',
+            `${platform}: ${article.id} の取得失敗。前回値を保持します`,
           );
         }
       }),

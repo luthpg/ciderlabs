@@ -1,6 +1,6 @@
-import { readFile, realpath, mkdir, writeFile } from 'node:fs/promises';
-import path from 'node:path';
 import { createHash } from 'node:crypto';
+import { mkdir, readFile, realpath, writeFile } from 'node:fs/promises';
+import path from 'node:path';
 import { load } from 'cheerio';
 import { z } from 'zod';
 import { renderMarkdown } from '../src/lib/markdown.server.ts';
@@ -44,7 +44,7 @@ export async function buildArticles(
       throw new Error('Markdownファイルを指定してください');
     }
 
-    files.set(file, '/articles/' + article.slug + '/');
+    files.set(file, `/articles/${article.slug}/`);
   }
 
   await mkdir('public/article-assets', {
@@ -98,7 +98,7 @@ export async function buildArticles(
 
       const local = await withinRoot(
         pathname.startsWith('/')
-          ? path.resolve(root, '.' + pathname)
+          ? path.resolve(root, `.${pathname}`)
           : path.resolve(path.dirname(source), pathname),
       );
 
@@ -106,7 +106,7 @@ export async function buildArticles(
         const href = files.get(local);
 
         if (!href) {
-          throw new Error('未公開記事へのリンクがあります: ' + rawUrl);
+          throw new Error(`未公開記事へのリンクがあります: ${rawUrl}`);
         }
 
         node.attr(attribute, href + match[2]);
@@ -114,7 +114,7 @@ export async function buildArticles(
       }
 
       if (!isAsset) {
-        throw new Error('未対応の画像形式です: ' + rawUrl);
+        throw new Error(`未対応の画像形式です: ${rawUrl}`);
       }
 
       const bytes = await readFile(local);
@@ -123,7 +123,7 @@ export async function buildArticles(
 
       await writeFile(path.join('public/article-assets', filename), bytes);
 
-      node.attr(attribute, '/article-assets/' + filename + match[2]);
+      node.attr(attribute, `/article-assets/${filename}${match[2]}`);
     }
 
     output.push({
@@ -131,7 +131,7 @@ export async function buildArticles(
       slug: article.slug,
       title: meta.title,
       description: article.description,
-      url: '/articles/' + article.slug + '/',
+      url: `/articles/${article.slug}/`,
       tags: [...new Set(meta.topics ?? meta.tags ?? [])],
       date: article.publishedAt,
       updatedAt: article.updatedAt,
