@@ -1,6 +1,19 @@
 {
   "apiFields": [
     {
+      "fieldId": "slug",
+      "name": "URLのslug",
+      "kind": "text",
+      "required": false,
+      "isUnique": true,
+      "description": "未設定時は名前またはIDから自動生成",
+      "patternMatchValidation": {
+        "regexp": {
+          "pattern": "^[a-z0-9]+(-[a-z0-9]+)*$"
+        }
+      }
+    },
+    {
       "fieldId": "name",
       "name": "名前",
       "kind": "text",
@@ -71,6 +84,13 @@
       "kind": "text",
       "required": false,
       "description": "librariesのslug。urlかこの項目のどちらかを設定"
+    },
+    {
+      "fieldId": "markdown",
+      "name": "詳細ページ本文",
+      "kind": "textArea",
+      "required": false,
+      "description": "Zenn記法のMarkdown原文（任意）"
     },
     {
       "fieldId": "order",

@@ -3,6 +3,7 @@ import path from 'node:path';
 import { load } from 'cheerio';
 import { parse as parseYaml } from 'yaml';
 import { z } from 'zod';
+import { cleanExcerpt } from '../src/lib/content.ts';
 import { renderMarkdown } from '../src/lib/markdown.server.ts';
 import {
   type SourceArticle,
@@ -110,25 +111,35 @@ function zennDate(value: string, file: string) {
 async function excerpt(body: string, title: string) {
   const { html } = await renderMarkdown(body);
   const $ = load(html, {}, false);
-  let result = '';
+  const parts: string[] = [];
 
   for (const paragraph of $.root().children('p').toArray()) {
     const node = $(paragraph).clone();
-    node.find('img, iframe, script, style, sup').remove();
+    node
+      .find('img, iframe, script, style, sup, a.embed-fallback-link')
+      .remove();
 
-    const candidate = node.text().replace(/\s+/g, ' ').trim();
+    const rawCandidate = node.text().replace(/\s+/g, ' ').trim();
+    if (!rawCandidate) continue;
 
-    if (candidate) {
-      result = candidate;
+    const cleaned = cleanExcerpt(rawCandidate, 200);
+    if (
+      !cleaned ||
+      /^(?:こんにちは|はじめまして|どうも)[、，！!。📝🦔👋\s]*(?:luthです[。！!📝🦔👋\s]*)?$/u.test(
+        cleaned,
+      )
+    ) {
+      continue;
+    }
+
+    parts.push(cleaned);
+    if (Array.from(parts.join(' ')).length >= 90) {
       break;
     }
   }
 
-  const characters = Array.from(result || title);
-
-  return characters.length > 160
-    ? `${characters.slice(0, 159).join('')}…`
-    : characters.join('');
+  const combined = parts.join(' ').trim();
+  return cleanExcerpt(combined || title, 120);
 }
 
 export async function buildSourceIndex(

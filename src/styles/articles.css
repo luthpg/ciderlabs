@@ -5,12 +5,12 @@
 
 .article-entry .article-row {
   border: 0;
-  padding-bottom: 1rem;
+  padding-bottom: 0.85rem;
 }
 
 .article-summary {
   margin-top: 0.5rem;
-  font-size: 0.8rem;
+  font-size: 0.825rem;
   color: var(--color-body);
   line-height: 1.8;
 }
@@ -26,7 +26,7 @@
   flex-wrap: wrap;
   align-items: baseline;
   gap: 0.35rem 0.75rem;
-  font-size: 0.7rem;
+  font-size: 0.75rem;
   color: var(--color-muted);
 }
 
@@ -44,7 +44,7 @@
 }
 
 .platform-reaction small {
-  font-size: 0.65rem;
+  font-size: 0.7rem;
 }
 
 .article-page {
@@ -71,7 +71,7 @@
 .article-title h1 {
   margin: 1rem 0;
   font-size: clamp(1.65rem, 3vw, 2.4rem);
-  line-height: 1.6;
+  line-height: 1.55;
 }
 
 .article-dates {

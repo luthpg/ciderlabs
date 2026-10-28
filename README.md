@@ -42,16 +42,16 @@
 
 パッケージマネージャーには `pnpm` を使用します。
 
-| コマンド | 内容 |
-| :--- | :--- |
-| `pnpm install` | 依存パッケージをインストールします |
-| `pnpm run dev` | 記事データの同期とリアクション取得を実行したあと、開発サーバーを起動します |
-| `pnpm run content:sync` | 記事リポジトリの原稿変換とZenn / Qiitaのリアクション取得のみを実行します |
-| `pnpm run typecheck` | TypeScriptの型チェック（`tsc --noEmit`）を実行します |
-| `pnpm run build` | 型チェック、記事同期、静的サイトのビルド（OGP画像生成を含む）を実行します |
-| `pnpm run preview` | ビルド済みの `dist/` をローカルでプレビューします |
-| `pnpm run check` | Biomeによるフォーマットとリントを実行します |
-| `pnpm run deploy` | Wrangler経由でCloudflareへデプロイします |
+| コマンド                | 内容                                                                       |
+| :---------------------- | :------------------------------------------------------------------------- |
+| `pnpm install`          | 依存パッケージをインストールします                                         |
+| `pnpm run dev`          | 記事データの同期とリアクション取得を実行したあと、開発サーバーを起動します |
+| `pnpm run content:sync` | 記事リポジトリの原稿変換とZenn / Qiitaのリアクション取得のみを実行します   |
+| `pnpm run typecheck`    | TypeScriptの型チェック（`tsc --noEmit`）を実行します                       |
+| `pnpm run build`        | 型チェック、記事同期、静的サイトのビルド（OGP画像生成を含む）を実行します  |
+| `pnpm run preview`      | ビルド済みの `dist/` をローカルでプレビューします                          |
+| `pnpm run check`        | Biomeによるフォーマットとリントを実行します                                |
+| `pnpm run deploy`       | Wrangler経由でCloudflareへデプロイします                                   |
 
 ## 環境変数とCI設定
 
@@ -69,13 +69,13 @@ CONTENT_DIR=./../zenn
 # PREVIOUS_REACTIONS_URL=https://www.ciderlabs.link/reactions.json
 ```
 
-| 変数名 | 必須 | 説明 |
-| :--- | :---: | :--- |
-| `MICROCMS_SERVICE_DOMAIN` | 必須 | microCMSのサービスドメイン（`.microcms.io` を除いた文字列） |
-| `MICROCMS_API_KEY` | 必須 | `projects` と `libraries` エンドポイントのGET権限を持つAPIキー |
-| `CONTENT_DIR` | 任意 | 記事原稿リポジトリの配置パス。未設定時は `./content-source` を参照します |
-| `QIITA_TOKEN` | 任意 | Qiita API v2のアクセストークン。設定すると認証済みのレート制限（1000回/時）が適用されます |
-| `PREVIOUS_REACTIONS_URL` | 任意 | 公開済みサイトの `reactions.json` のURL。ローカルキャッシュと統合する際に使用します |
+| 変数名                    | 必須 | 説明                                                                                      |
+| :------------------------ | :--: | :---------------------------------------------------------------------------------------- |
+| `MICROCMS_SERVICE_DOMAIN` | 必須 | microCMSのサービスドメイン（`.microcms.io` を除いた文字列）                               |
+| `MICROCMS_API_KEY`        | 必須 | `projects` と `libraries` エンドポイントのGET権限を持つAPIキー                            |
+| `CONTENT_DIR`             | 任意 | 記事原稿リポジトリの配置パス。未設定時は `./content-source` を参照します                  |
+| `QIITA_TOKEN`             | 任意 | Qiita API v2のアクセストークン。設定すると認証済みのレート制限（1000回/時）が適用されます |
+| `PREVIOUS_REACTIONS_URL`  | 任意 | 公開済みサイトの `reactions.json` のURL。ローカルキャッシュと統合する際に使用します       |
 
 ### 2. GitHub Actions（Secrets / Variables）
 
@@ -83,26 +83,26 @@ CONTENT_DIR=./../zenn
 
 #### Repository Secrets
 
-| 名前 | 必須 | 内容 |
-| :--- | :---: | :--- |
-| `MICROCMS_SERVICE_DOMAIN` | 必須 | microCMSのサービスドメイン |
-| `MICROCMS_API_KEY` | 必須 | microCMSのAPIキー |
-| `CLOUDFLARE_ACCOUNT_ID` | 必須 | デプロイ先CloudflareアカウントID |
-| `CLOUDFLARE_API_TOKEN` | 必須 | Cloudflare Workersのデプロイ権限を持つAPIトークン |
-| `CONTENT_READ_TOKEN` | 条件付き必須 | 記事原稿リポジトリがプライベートの場合に必須。対象リポジトリにのみ `Contents: Read-only` 権限を付与したFine-grained Personal Access Tokenを設定します |
-| `QIITA_TOKEN` | 推奨 | 共有ランナーのIPレート制限（未認証時60回/時）を回避するためのQiitaアクセストークン |
+| 名前                      |     必須     | 内容                                                                                                                                                  |
+| :------------------------ | :----------: | :---------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `MICROCMS_SERVICE_DOMAIN` |     必須     | microCMSのサービスドメイン                                                                                                                            |
+| `MICROCMS_API_KEY`        |     必須     | microCMSのAPIキー                                                                                                                                     |
+| `CLOUDFLARE_ACCOUNT_ID`   |     必須     | デプロイ先CloudflareアカウントID                                                                                                                      |
+| `CLOUDFLARE_API_TOKEN`    |     必須     | Cloudflare Workersのデプロイ権限を持つAPIトークン                                                                                                     |
+| `CONTENT_READ_TOKEN`      | 条件付き必須 | 記事原稿リポジトリがプライベートの場合に必須。対象リポジトリにのみ `Contents: Read-only` 権限を付与したFine-grained Personal Access Tokenを設定します |
+| `QIITA_TOKEN`             |     推奨     | 共有ランナーのIPレート制限（未認証時60回/時）を回避するためのQiitaアクセストークン                                                                    |
 
 #### Repository Variables
 
-| 名前 | 必須 | 内容 |
-| :--- | :---: | :--- |
-| `CONTENT_REPOSITORY` | 必須 | 記事原稿リポジトリ名（例: `luthpg/zenn`） |
-| `CONTENT_REF` | 任意 | 取得対象のブランチまたはタグ（未設定時は `main`） |
+| 名前                     | 必須 | 内容                                                                             |
+| :----------------------- | :--: | :------------------------------------------------------------------------------- |
+| `CONTENT_REPOSITORY`     | 必須 | 記事原稿リポジトリ名（例: `luthpg/zenn`）                                        |
+| `CONTENT_REF`            | 任意 | 取得対象のブランチまたはタグ（未設定時は `main`）                                |
 | `PREVIOUS_REACTIONS_URL` | 推奨 | 前回配信済みのリアクションURL（例: `https://www.ciderlabs.link/reactions.json`） |
 
 ## microCMSのスキーマ定義
 
 `microcms/` ディレクトリに各APIのスキーマ定義ファイルを配置しています。
 
-- `microcms/projects.schema.json`: 開発物一覧（`visual` フィールドのセレクト項目には `poohma`, `webapp`, `browser`, `mobile`, `chat`, `api`, `terminal`, `code`, `dashboard`, `automation`, `extension`, `security` を指定可能）
+- `microcms/projects.schema.json`: 開発物一覧（`visual` フィールドのセレクト項目には `poohma`, `webapp`, `browser`, `mobile`, `chat`, `api`, `terminal`, `code`, `dashboard`, `automation`, `extension`, `security` を指定可能。個別詳細ページ `/projects/[slug]/` 用の `slug`・`markdown` も任意で設定可能）
 - `microcms/libraries.schema.json`: OSSライブラリのメタ情報および導入ガイド本文

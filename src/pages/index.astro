@@ -17,15 +17,55 @@ const content = await getContent();
       <div class="section-heading">
         <div>
           <p class="eyebrow">02 / WRITING</p>
-          <h2>つくりながら、考えたこと。</h2>
+          <h2>つくりながら、<wbr />考えたこと。</h2>
         </div>
-        <a class="text-link" href={site.zenn}>Zennの記事一覧 ↗</a>
+        <div class="flex flex-wrap items-center gap-5">
+          <a class="text-link" href="/articles/">
+            記事一覧（全{content.articles.length}件） →
+          </a>
+          <a
+            class="text-link"
+            href={site.zenn}
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            Zenn ↗
+          </a>
+        </div>
       </div>
 
-      <ArticleList articles={content.articles} client:visible />
+      <ArticleList
+        articles={content.articles}
+        limit={3}
+        showFilters={false}
+      />
+
+      <div class="mt-8 flex flex-wrap items-center justify-between gap-4">
+        <a class="button outline" href="/articles/">
+          すべての記事を見る（全{content.articles.length}件） <span>→</span>
+        </a>
+        <div class="flex items-center gap-5">
+          <a
+            class="text-link"
+            href={site.zenn}
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            Zennで読む ↗
+          </a>
+          <a
+            class="text-link"
+            href={site.qiita}
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            Qiitaで読む ↗
+          </a>
+        </div>
+      </div>
     </div>
   </section>
 
   <Libraries libraries={content.libraries} />
-  <About />
+  <About projects={content.projects} libraries={content.libraries} />
 </Base>

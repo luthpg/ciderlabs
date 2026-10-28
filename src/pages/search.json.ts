@@ -1,7 +1,13 @@
 import type { APIRoute } from 'astro';
 
 import { getContent } from '../lib/cms.server';
-import { docHref, projectHref, type SearchItem } from '../lib/content';
+import {
+  cleanExcerpt,
+  docHref,
+  normalizeTags,
+  projectDetailHref,
+  type SearchItem,
+} from '../lib/content';
 
 export const GET: APIRoute = async () => {
   const { projects, articles, libraries } = await getContent();
@@ -9,15 +15,15 @@ export const GET: APIRoute = async () => {
   const items: SearchItem[] = [
     ...projects.map((project) => ({
       title: project.name,
-      href: projectHref(project),
+      href: projectDetailHref(project),
       kind: 'つくったもの',
-      keywords: `${project.description} ${project.tags.join(' ')}`,
+      keywords: `${project.description} ${project.category} ${project.tags.join(' ')}`,
     })),
     ...articles.map((article) => ({
       title: article.title,
       href: article.url,
       kind: '技術記事',
-      keywords: `${article.description} ${article.tags.join(' ')}`,
+      keywords: `${cleanExcerpt(article.description, Number.POSITIVE_INFINITY)} ${normalizeTags(article.tags).join(' ')}`,
     })),
     ...libraries.map((library) => ({
       title: library.name,

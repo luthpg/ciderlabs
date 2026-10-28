@@ -2,11 +2,17 @@
 import type { GetStaticPaths } from 'astro';
 import 'zenn-content-css/lib/index.css';
 import '../../styles/articles.css';
+import CopyMarkdownButton from '../../components/CopyMarkdownButton.astro';
 import Reactions from '../../components/Reactions';
 import { site } from '../../config/site';
 import Base from '../../layouts/Base.astro';
 import { getArticleDocuments } from '../../lib/articles.server';
-import { type ArticleDocument, formatDate } from '../../lib/content';
+import {
+  type ArticleDocument,
+  cleanExcerpt,
+  formatDate,
+  normalizeTags,
+} from '../../lib/content';
 
 export const getStaticPaths = (() =>
   getArticleDocuments().map((article) => ({
@@ -19,11 +25,13 @@ interface Props {
 }
 
 const { article } = Astro.props;
+const displayTags = normalizeTags(article.tags);
+const displayDescription = cleanExcerpt(article.description, 140);
 ---
 
 <Base
   title={article.title + ' | ' + site.name}
-  description={article.description}
+  description={displayDescription}
   type="article"
   ogImage={`/og/articles/${article.slug}.png`}
 >
@@ -47,11 +55,14 @@ const { article } = Astro.props;
 
   <div class="shell article-page">
     <article class="article-body">
-      <a class="back-link" href="/#writing">← 記事一覧</a>
+      <div class="flex flex-wrap items-center gap-5">
+        <a class="back-link" href="/articles/">← 記事一覧</a>
+        <a class="back-link" href="/#writing">トップページへ</a>
+      </div>
 
       <header class="article-title">
         <div class="tags">
-          {article.tags.map(tag => <span>{tag}</span>)}
+          {displayTags.map(tag => <span>{tag}</span>)}
         </div>
 
         <h1>{article.title}</h1>
@@ -72,8 +83,11 @@ const { article } = Astro.props;
           )}
         </p>
 
-        <p class="lead">{article.description}</p>
-        <Reactions article={article} />
+        <p class="lead">{displayDescription}</p>
+        <div class="mt-4 flex flex-wrap items-center justify-between gap-4">
+          <Reactions article={article} showFetchedAt />
+          <CopyMarkdownButton markdown={article.markdown} />
+        </div>
       </header>
 
       {article.headings.length > 0 && (
@@ -97,7 +111,10 @@ const { article } = Astro.props;
 
       <footer class="article-end">
         <p>この記事へのリアクション・コメントは各掲載先へ。</p>
-        <Reactions article={article} />
+        <Reactions article={article} showFetchedAt />
+        <div class="mt-6">
+          <a class="text-link" href="/articles/">← すべての技術記事を見る</a>
+        </div>
       </footer>
     </article>
 

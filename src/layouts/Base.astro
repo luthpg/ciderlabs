@@ -46,6 +46,8 @@ const ogImageUrl = new URL(ogImage, Astro.site);
     <meta property="og:image:width" content="1280" />
     <meta property="og:image:height" content="720" />
     <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:site" content={site.xHandle} />
+    <meta name="twitter:creator" content={site.xHandle} />
     <meta name="twitter:title" content={title} />
     <meta name="twitter:description" content={description} />
     <meta name="twitter:image" content={ogImageUrl} />
@@ -80,7 +82,7 @@ const ogImageUrl = new URL(ogImage, Astro.site);
 
     <header class="site-header">
       <div class="shell header-inner">
-        <a class="brand" href="/" aria-label="cider lab ホーム">
+        <a class="brand" href="/" aria-label="ciderlabs ホーム">
           <span class="brand-mark" aria-hidden="true">
             c<span>●</span>
           </span>
@@ -157,12 +159,26 @@ const ogImageUrl = new URL(ogImage, Astro.site);
           <a class="brand" href="/">
             {site.name}<span class="brand-dot">.</span>
           </a>
-          <p>つくる、書く、共有する。</p>
+          <p>小さな不便を、つくる楽しさに。</p>
         </div>
 
-        <nav aria-label="外部リンク">
-          <a href={site.github}>GitHub ↗</a>
-          <a href={site.zenn}>Zenn ↗</a>
+        <nav aria-label="サイトリンク">
+          <a href="/articles/">技術記事一覧</a>
+          <a href={site.github} target="_blank" rel="noopener noreferrer">
+            GitHub ↗
+          </a>
+          <a href={site.zenn} target="_blank" rel="noopener noreferrer">
+            Zenn ↗
+          </a>
+          <a href={site.qiita} target="_blank" rel="noopener noreferrer">
+            Qiita ↗
+          </a>
+          <a href={site.lapras} target="_blank" rel="noopener noreferrer">
+            LAPRAS ↗
+          </a>
+          <a href={site.x} target="_blank" rel="noopener noreferrer">
+            X ({site.xHandle}) ↗
+          </a>
         </nav>
 
         <small>© {new Date().getUTCFullYear()} {site.author}</small>

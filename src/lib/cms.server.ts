@@ -1,6 +1,7 @@
 import { createClient } from 'microcms-js-sdk';
 import { z } from 'zod';
 import { getArticles } from './articles.server';
+import { projectSlug } from './content';
 import {
   librarySchema,
   projectSchema,
@@ -37,6 +38,12 @@ async function fetchContent(): Promise<SiteContent> {
   const projects = z.array(projectSchema).parse(rawProjects);
   const libraries = z.array(librarySchema).parse(rawLibraries);
   const articles = getArticles();
+
+  const projectSlugs = new Set(projects.map((project) => projectSlug(project)));
+
+  if (projectSlugs.size !== projects.length) {
+    throw new Error('プロジェクトのslugが重複しています');
+  }
 
   const slugs = new Set(libraries.map((library) => library.slug));
 

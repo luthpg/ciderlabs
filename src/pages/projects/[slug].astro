@@ -1,0 +1,220 @@
+---
+import type { GetStaticPaths } from 'astro';
+import 'zenn-content-css/lib/index.css';
+import CopyMarkdownButton from '../../components/CopyMarkdownButton.astro';
+import { ProjectVisual } from '../../components/HomeSections';
+import { site } from '../../config/site';
+import Base from '../../layouts/Base.astro';
+import { getContent } from '../../lib/cms.server';
+import {
+  docHref,
+  findRelatedArticles,
+  formatDate,
+  type Project,
+  projectDetailHref,
+  projectSlug,
+} from '../../lib/content';
+import {
+  renderMarkdown,
+  sanitizeMarkdownForCopy,
+} from '../../lib/markdown.server';
+
+export const getStaticPaths = (async () => {
+  const { projects } = await getContent();
+
+  return projects.map((project) => ({
+    params: { slug: projectSlug(project) },
+    props: { project },
+  }));
+}) satisfies GetStaticPaths;
+
+interface Props {
+  project: Project;
+}
+
+const { project } = Astro.props;
+const slug = projectSlug(project);
+const { projects, articles } = await getContent();
+const rendered = project.markdown
+  ? await renderMarkdown(project.markdown)
+  : null;
+const copyMarkdown = sanitizeMarkdownForCopy(project.markdown ?? '', {
+  title: project.name,
+  description: project.description,
+});
+const relatedArticles = findRelatedArticles(articles, {
+  slug,
+  name: project.name,
+  tags: project.tags,
+});
+---
+
+<Base
+  title={`${project.name} | ${site.name}`}
+  description={project.description}
+  ogImage={`/og/projects/${slug}.png`}
+>
+  <Fragment slot="head">
+    {
+      rendered?.hasEmbeds && (
+        <script
+          is:inline
+          src="https://embed.zenn.studio/js/listen-embed-event.js"
+        ></script>
+      )
+    }
+  </Fragment>
+
+  <div class="shell docs-layout">
+    <aside class="docs-sidebar">
+      <a class="back-link" href="/#projects">← つくったもの一覧</a>
+      <p class="eyebrow">PROJECTS</p>
+
+      <nav aria-label="つくったもの一覧">
+        {
+          projects.map((item) => (
+            <a
+              href={projectDetailHref(item)}
+              aria-current={item.id === project.id ? 'page' : undefined}
+            >
+              {item.name.split(/\s+[-—–]\s+/)[0]?.trim() || item.name}
+            </a>
+          ))
+        }
+      </nav>
+    </aside>
+
+    <article class="docs-article">
+      <div class="mb-6 lg:hidden">
+        <a class="back-link" href="/#projects">← つくったもの一覧へ戻る</a>
+      </div>
+
+      <header class="docs-title">
+        <p class="eyebrow">{project.category} / OVERVIEW</p>
+        <h1>{project.name}</h1>
+        <p class="lead whitespace-pre-line">{project.description}</p>
+
+        {
+          project.tags.length > 0 && (
+            <div class="tags mt-4">
+              {project.tags.map((tag) => (
+                <span>{tag}</span>
+              ))}
+            </div>
+          )
+        }
+
+        <div class="mt-6 flex flex-wrap gap-3">
+          {
+            project.url && (
+              <a
+                class="button primary"
+                href={project.url}
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                サイトを開く <span aria-hidden="true">↗</span>
+              </a>
+            )
+          }
+          {
+            project.repoUrl && (
+              <a
+                class="button outline"
+                href={project.repoUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                GitHub リポジトリ <span aria-hidden="true">↗</span>
+              </a>
+            )
+          }
+          {
+            project.librarySlug && (
+              <a
+                class={`button ${project.url ? 'outline' : 'primary'}`}
+                href={docHref(project.librarySlug)}
+              >
+                導入ガイドを読む <span aria-hidden="true">→</span>
+              </a>
+            )
+          }
+          <CopyMarkdownButton markdown={copyMarkdown} />
+        </div>
+      </header>
+
+      <div class="project-detail-visual mb-10 overflow-hidden rounded-2xl border border-line">
+        <ProjectVisual project={project} large />
+      </div>
+
+      {
+        rendered && rendered.headings.length > 0 && (
+          <details class="mobile-toc">
+            <summary>このページの内容</summary>
+            <nav aria-label="ページ内の目次">
+              {rendered.headings.map((heading) => (
+                <a
+                  href={'#' + encodeURIComponent(heading.id)}
+                  data-level={heading.level}
+                >
+                  {heading.text}
+                </a>
+              ))}
+            </nav>
+          </details>
+        )
+      }
+
+      {
+        rendered && (
+          <div class="znc doc-content mb-12" set:html={rendered.html} />
+        )
+      }
+
+      {
+        relatedArticles.length > 0 && (
+          <section class="project-section">
+            <h2>関連する技術記事</h2>
+            <div class="mt-4 grid gap-3">
+              {relatedArticles.map((article) => (
+                <a class="related-article-card" href={article.url}>
+                  <div>
+                    <time datetime={article.date}>
+                      {formatDate(article.date)}
+                    </time>
+                    <strong>{article.title}</strong>
+                  </div>
+                  <span aria-hidden="true">→</span>
+                </a>
+              ))}
+            </div>
+          </section>
+        )
+      }
+    </article>
+
+    <aside class="desktop-toc">
+      {
+        rendered && rendered.headings.length > 0 && (
+          <nav aria-label="ページ内の目次">
+            <p class="eyebrow">このページの内容</p>
+            {rendered.headings.map((heading) => (
+              <a
+                href={'#' + encodeURIComponent(heading.id)}
+                data-level={heading.level}
+              >
+                {heading.text}
+              </a>
+            ))}
+          </nav>
+        )
+      }
+    </aside>
+  </div>
+
+  <script>
+    if (document.querySelector('embed-katex')) {
+      import('zenn-embed-elements');
+    }
+  </script>
+</Base>

@@ -59,6 +59,7 @@ const projectVisual = z.enum(projectVisualValues);
 
 export const projectSchema = base
   .extend({
+    slug: optional(slug),
     name: text,
     category: text,
     description: text,
@@ -71,6 +72,7 @@ export const projectSchema = base
     url: optional(url),
     repoUrl: optional(url),
     librarySlug: optional(slug),
+    markdown: optional(text),
     order: z.number().int(),
   })
   .refine((project) => Boolean(project.url || project.librarySlug), {
@@ -143,6 +145,7 @@ export const articleSchema = z.object({
 });
 
 export const articleDocumentSchema = articleSchema.extend({
+  markdown: z.string(),
   html: z.string(),
   headings: z.array(
     z.object({
