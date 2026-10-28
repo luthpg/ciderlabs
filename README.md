@@ -104,5 +104,5 @@ CONTENT_DIR=./../zenn
 
 `microcms/` ディレクトリに各APIのスキーマ定義ファイルを配置しています。
 
-- `microcms/projects.schema.json`: 開発物一覧（`visual` フィールドのセレクト項目には `poohma`, `webapp`, `browser`, `mobile`, `chat`, `api`, `terminal`, `code`, `dashboard`, `automation`, `extension`, `security` を指定可能）
+- `microcms/projects.schema.json`: 開発物一覧（`visual` フィールドのセレクト項目には `poohma`, `webapp`, `browser`, `mobile`, `chat`, `api`, `terminal`, `code`, `dashboard`, `automation`, `extension`, `security` を指定可能。個別詳細ページ `/projects/[slug]/` 用の `slug`・`markdown` も任意で設定可能）
 - `microcms/libraries.schema.json`: OSSライブラリのメタ情報および導入ガイド本文

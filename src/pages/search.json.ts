@@ -8,7 +8,6 @@ import {
   projectDetailHref,
   type SearchItem,
 } from '../lib/content';
-import { getProjectSpec } from '../lib/projects';
 
 export const GET: APIRoute = async () => {
   const { projects, articles, libraries } = await getContent();
@@ -16,15 +15,12 @@ export const GET: APIRoute = async () => {
   const items: SearchItem[] = [
     ...projects
       .filter((project) => !project.librarySlug)
-      .map((project) => {
-        const spec = getProjectSpec(project);
-        return {
-          title: project.name,
-          href: projectDetailHref(project),
-          kind: 'つくったもの',
-          keywords: `${spec.userSummary} ${project.description} ${project.tags.join(' ')}`,
-        };
-      }),
+      .map((project) => ({
+        title: project.name,
+        href: projectDetailHref(project),
+        kind: 'つくったもの',
+        keywords: `${project.description} ${project.category} ${project.tags.join(' ')}`,
+      })),
     ...articles.map((article) => ({
       title: article.title,
       href: article.url,

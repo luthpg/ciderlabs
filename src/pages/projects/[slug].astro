@@ -1,25 +1,29 @@
 ---
 import type { GetStaticPaths } from 'astro';
+import 'zenn-content-css/lib/index.css';
 import { ProjectVisual } from '../../components/HomeSections';
 import { site } from '../../config/site';
 import Base from '../../layouts/Base.astro';
 import { getContent } from '../../lib/cms.server';
 import {
   docHref,
+  findRelatedArticles,
   formatDate,
   type Project,
   projectDetailHref,
   projectSlug,
 } from '../../lib/content';
-import { getProjectSpec } from '../../lib/projects';
+import { renderMarkdown } from '../../lib/markdown.server';
 
 export const getStaticPaths = (async () => {
   const { projects } = await getContent();
 
-  return projects.map((project) => ({
-    params: { slug: projectSlug(project) },
-    props: { project },
-  }));
+  return projects
+    .filter((project) => !project.librarySlug)
+    .map((project) => ({
+      params: { slug: projectSlug(project) },
+      props: { project },
+    }));
 }) satisfies GetStaticPaths;
 
 interface Props {
@@ -27,18 +31,34 @@ interface Props {
 }
 
 const { project } = Astro.props;
+const slug = projectSlug(project);
 const { projects, articles } = await getContent();
-const spec = getProjectSpec(project);
-const relatedArticles = articles.filter((article) =>
-  spec.relatedArticleSlugs.includes(article.slug),
-);
+const rendered = project.markdown
+  ? await renderMarkdown(project.markdown)
+  : null;
+const relatedArticles = findRelatedArticles(articles, {
+  slug,
+  name: project.name,
+  tags: project.tags,
+});
 ---
 
 <Base
   title={`${project.name} | ${site.name}`}
-  description={spec.userSummary}
-  ogImage={`/og/projects/${spec.slug}.png`}
+  description={project.description}
+  ogImage={`/og/projects/${slug}.png`}
 >
+  <Fragment slot="head">
+    {
+      rendered?.hasEmbeds && (
+        <script
+          is:inline
+          src="https://embed.zenn.studio/js/listen-embed-event.js"
+        ></script>
+      )
+    }
+  </Fragment>
+
   <div class="shell docs-layout">
     <aside class="docs-sidebar">
       <a class="back-link" href="/#projects">← つくったもの一覧</a>
@@ -71,12 +91,17 @@ const relatedArticles = articles.filter((article) =>
       <header class="docs-title">
         <p class="eyebrow">{project.category} / OVERVIEW</p>
         <h1>{project.name}</h1>
-        <p class="lead">{spec.userSummary}</p>
-        <p class="text-sm text-body">{spec.techSummary}</p>
+        <p class="lead whitespace-pre-line">{project.description}</p>
 
-        <div class="tags mt-4">
-          {project.tags.map((tag) => <span>{tag}</span>)}
-        </div>
+        {
+          project.tags.length > 0 && (
+            <div class="tags mt-4">
+              {project.tags.map((tag) => (
+                <span>{tag}</span>
+              ))}
+            </div>
+          )
+        }
 
         <div class="mt-6 flex flex-wrap gap-3">
           {
@@ -117,54 +142,74 @@ const relatedArticles = articles.filter((article) =>
         <ProjectVisual project={project} large />
       </div>
 
-      <div class="project-detail-sections">
-        <section class="project-section">
-          <h2>解決したかった課題</h2>
-          <p>{spec.problem}</p>
-        </section>
+      {
+        rendered && rendered.headings.length > 0 && (
+          <details class="mobile-toc">
+            <summary>このページの内容</summary>
+            <nav aria-label="ページ内の目次">
+              {rendered.headings.map((heading) => (
+                <a
+                  href={'#' + encodeURIComponent(heading.id)}
+                  data-level={heading.level}
+                >
+                  {heading.text}
+                </a>
+              ))}
+            </nav>
+          </details>
+        )
+      }
 
-        <section class="project-section">
-          <h2>主な機能と利用場面</h2>
-          <ul class="project-feature-list">
-            {spec.features.map((feature) => <li>{feature}</li>)}
-          </ul>
-        </section>
+      {
+        rendered && (
+          <div class="znc doc-content mb-12" set:html={rendered.html} />
+        )
+      }
 
-        <section class="project-section">
-          <h2>設計・実装上の工夫</h2>
-          <dl class="project-highlights-grid">
-            {
-              spec.highlights.map((item) => (
-                <div class="project-highlight-card">
-                  <dt>{item.label}</dt>
-                  <dd>{item.text}</dd>
-                </div>
-              ))
-            }
-          </dl>
-        </section>
-
-        {
-          relatedArticles.length > 0 && (
-            <section class="project-section">
-              <h2>関連する技術記事</h2>
-              <div class="mt-4 grid gap-3">
-                {relatedArticles.map((article) => (
-                  <a class="related-article-card" href={article.url}>
-                    <div>
-                      <time datetime={article.date}>
-                        {formatDate(article.date)}
-                      </time>
-                      <strong>{article.title}</strong>
-                    </div>
-                    <span aria-hidden="true">→</span>
-                  </a>
-                ))}
-              </div>
-            </section>
-          )
-        }
-      </div>
+      {
+        relatedArticles.length > 0 && (
+          <section class="project-section">
+            <h2>関連する技術記事</h2>
+            <div class="mt-4 grid gap-3">
+              {relatedArticles.map((article) => (
+                <a class="related-article-card" href={article.url}>
+                  <div>
+                    <time datetime={article.date}>
+                      {formatDate(article.date)}
+                    </time>
+                    <strong>{article.title}</strong>
+                  </div>
+                  <span aria-hidden="true">→</span>
+                </a>
+              ))}
+            </div>
+          </section>
+        )
+      }
     </article>
+
+    <aside class="desktop-toc">
+      {
+        rendered && rendered.headings.length > 0 && (
+          <nav aria-label="ページ内の目次">
+            <p class="eyebrow">このページの内容</p>
+            {rendered.headings.map((heading) => (
+              <a
+                href={'#' + encodeURIComponent(heading.id)}
+                data-level={heading.level}
+              >
+                {heading.text}
+              </a>
+            ))}
+          </nav>
+        )
+      }
+    </aside>
   </div>
+
+  <script>
+    if (document.querySelector('embed-katex')) {
+      import('zenn-embed-elements');
+    }
+  </script>
 </Base>

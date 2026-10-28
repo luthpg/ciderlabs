@@ -6,7 +6,6 @@ import {
   projectDetailHref,
   type SiteContent,
 } from '../lib/content';
-import { getProjectSpec } from '../lib/projects';
 
 export function Hero({
   counts,
@@ -108,6 +107,7 @@ export function getProjectMeta(project: Project) {
   const shortName = parts[0]?.trim() || project.name;
   const subtitle = parts[1]?.trim() || project.category;
   const slugName =
+    project.slug ??
     project.librarySlug ??
     shortName
       .toLowerCase()
@@ -427,7 +427,6 @@ function ProjectCard({
   project: Project;
   large?: boolean;
 }) {
-  const spec = getProjectSpec(project);
   const detailUrl = project.librarySlug
     ? docHref(project.librarySlug)
     : projectDetailHref(project);
@@ -443,9 +442,7 @@ function ProjectCard({
           <a href={detailUrl}>{project.name}</a>
         </h3>
 
-        <p>{spec.userSummary}</p>
-
-        {large && <p className="project-subdesc">{spec.techSummary}</p>}
+        <p className="whitespace-pre-line">{project.description}</p>
 
         <div className="tags">
           {project.tags.map((tag) => (
@@ -455,7 +452,7 @@ function ProjectCard({
 
         <div className="card-links">
           <a href={detailUrl}>
-            {project.librarySlug ? '導入ガイド →' : '概要・設計を見る →'}
+            {project.librarySlug ? '導入ガイド →' : '詳細を見る →'}
           </a>
           {project.url && (
             <a href={project.url} target="_blank" rel="noopener noreferrer">
@@ -625,7 +622,13 @@ export function Libraries({ libraries }: { libraries: Library[] }) {
   );
 }
 
-export function About() {
+export function About({
+  projects = [],
+  libraries = [],
+}: {
+  projects?: Project[];
+  libraries?: Library[];
+}) {
   return (
     <section id="about" className="about-section">
       <div className="shell about-grid">
@@ -645,31 +648,42 @@ export function About() {
           </p>
 
           <dl className="about-highlights">
-            <div>
-              <dt>GAS × TypeScript の開発基盤・OSS</dt>
-              <dd>
-                型安全なRPC通信ライブラリ{' '}
-                <a href="/docs/gasnuki/">@ciderjs/gasnuki</a>{' '}
-                や、テスト・CI込みの環境構築CLI{' '}
-                <a href="/docs/gasbombe/">@ciderjs/gasbombe</a>{' '}
-                を開発・公開しています。
-              </dd>
-            </div>
-            <div>
-              <dt>日常の不便を解消するWebアプリ設計</dt>
-              <dd>
-                パスキー認証（WebAuthn）とエンドツーエンド暗号化（E2EE）を組み合わせた家族向け共有アプリ{' '}
-                <a href="/projects/poohma/">PoohMa</a>{' '}
-                など、セキュリティと使いやすさを両立する個人開発に取り組んでいます。
-              </dd>
-            </div>
-            <div>
-              <dt>実践から得た技術知見の言語化</dt>
-              <dd>
-                GASのローカル自動テスト設計や暗号化アーキテクチャなど、開発のなかでぶつかった課題と解決策を{' '}
-                <a href="/articles/">技術記事</a> として継続的に発信しています。
-              </dd>
-            </div>
+            {libraries.length > 0 && (
+              <div>
+                <dt>開発者向けOSS・ライブラリの提供</dt>
+                <dd>
+                  日々の開発体験を改善するツールやライブラリを設計し、
+                  {libraries.map((lib, index) => (
+                    <span key={lib.id}>
+                      {index > 0 && '・'}
+                      <a href={docHref(lib.slug)}>{lib.name}</a>
+                    </span>
+                  ))}{' '}
+                  として公開しています。
+                </dd>
+              </div>
+            )}
+            {projects.length > 0 && (
+              <div>
+                <dt>日常の不便を解消するアプリケーション開発</dt>
+                <dd>
+                  安全性と使いやすさの両立を意識しながら、
+                  {projects
+                    .filter((proj) => !proj.librarySlug)
+                    .map((proj, index) => {
+                      const shortName =
+                        proj.name.split(/\s+[-—–]\s+/)[0]?.trim() || proj.name;
+                      return (
+                        <span key={proj.id}>
+                          {index > 0 && '・'}
+                          <a href={projectDetailHref(proj)}>{shortName}</a>
+                        </span>
+                      );
+                    })}{' '}
+                  などの個人開発に取り組んでいます。
+                </dd>
+              </div>
+            )}
             <div>
               <dt>活動サマリー・連絡先</dt>
               <dd>

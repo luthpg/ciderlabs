@@ -5,7 +5,7 @@ import {
   formatDate,
   getLatestReactionDate,
   normalizeTags,
-  PRIMARY_ARTICLE_TAGS,
+  rankArticleTags,
 } from '../lib/content';
 import Reactions from './Reactions';
 
@@ -27,15 +27,7 @@ export default function ArticleList({
     description: cleanExcerpt(article.description),
   }));
 
-  const allTags = [
-    ...new Set(normalizedArticles.flatMap((article) => article.tags)),
-  ];
-
-  const primarySet = new Set<string>(PRIMARY_ARTICLE_TAGS);
-  const primaryTags = PRIMARY_ARTICLE_TAGS.filter((tag) =>
-    allTags.includes(tag),
-  );
-  const secondaryTags = allTags.filter((tag) => !primarySet.has(tag));
+  const { primaryTags, secondaryTags } = rankArticleTags(normalizedArticles, 5);
 
   const filtered =
     active === null

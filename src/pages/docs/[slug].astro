@@ -5,7 +5,12 @@ import 'zenn-content-css/lib/index.css';
 import { site } from '../../config/site';
 import Base from '../../layouts/Base.astro';
 import { getContent } from '../../lib/cms.server';
-import { docHref, type Library } from '../../lib/content';
+import {
+  docHref,
+  findRelatedArticles,
+  formatDate,
+  type Library,
+} from '../../lib/content';
 import { renderMarkdown } from '../../lib/markdown.server';
 
 export const getStaticPaths = (async () => {
@@ -21,125 +26,15 @@ interface Props {
   library: Library;
 }
 
-const GASNUKI_QUICKSTART_MARKDOWN =
-  `
-
-## 必要なもの
-
-- **Node.js** 18 以上（フロントエンドのビルド環境）
-- **TypeScript** 5.0 以上推奨
-- Google Apps Script (` +
-  '`google.script.run`' +
-  `) を利用する Web アプリプロジェクト（React / Vue / Vanilla TS など）
-
-## クイックスタート
-
-### 1. インストール
-
-フロントエンド側のプロジェクトに ` +
-  '`@ciderjs/gasnuki`' +
-  ` をインストールします。
-
-\`\`\`bash
-npm install @ciderjs/gasnuki
-\`\`\`
-
-### 2. GAS側（サーバー）の関数定義と型エクスポート
-
-GAS 側で公開するグローバル関数を定義し、その型オブジェクトを ` +
-  '`export type`' +
-  ` でエクスポートします。
-
-\`\`\`ts:server/code.ts GAS側
-export function getUserProfile(userId: string) {
-  return {
-    id: userId,
-    name: 'luth',
-    role: 'admin' as const,
-  };
-}
-
-export function saveSettings(input: { notify: boolean; theme: 'light' | 'dark' }) {
-  PropertiesService.getScriptProperties().setProperty(
-    'SETTINGS',
-    JSON.stringify(input),
-  );
-  return { ok: true };
-}
-
-// フロントエンドへ共有するための関数型マップ
-export type ServerScripts = {
-  getUserProfile: typeof getUserProfile;
-  saveSettings: typeof saveSettings;
-};
-\`\`\`
-
-### 3. フロントエンド側（クライアント）からの呼び出し
-
-GAS 側から ` +
-  '`import type`' +
-  ` で型定義だけを取り込み、クライアントを生成します。コールバック形式の ` +
-  '`google.script.run`' +
-  ` がすべて型安全な ` +
-  '`Promise`' +
-  ` として呼び出せます。
-
-\`\`\`ts:client/api.ts フロントエンド側
-import { createClient } from '@ciderjs/gasnuki';
-import type { ServerScripts } from '../server/code';
-
-export const gas = createClient<ServerScripts>();
-
-async function main() {
-  // 引数と戻り値の型が自動推論される
-  const profile = await gas.getUserProfile('user-01');
-  console.log(profile.name);
-
-  const result = await gas.saveSettings({
-    notify: true,
-    theme: 'dark',
-  });
-  console.log(result.ok);
-}
-\`\`\`
-
-### 4. ローカル開発時のモック設定
-
-ローカルの Vite 開発サーバー上など、` +
-  '`window.google.script.run`' +
-  ` が存在しない環境では、モック実装を渡すことでブラウザ単体で画面開発を進められます。
-
-\`\`\`ts:client/api.mock.ts ローカル開発用モック
-import { createClient } from '@ciderjs/gasnuki';
-import type { ServerScripts } from '../server/code';
-
-export const gas = createClient<ServerScripts>({
-  mock: {
-    getUserProfile: async (userId) => ({
-      id: userId,
-      name: 'Local Mock User',
-      role: 'admin',
-    }),
-    saveSettings: async () => ({ ok: true }),
-  },
-});
-\`\`\`
-
-## 詳細なAPI仕様・サンプル
-
-オプション設定やエラーハンドリングの詳細については、[GitHub リポジトリの README](https://github.com/luthpg/gasnuki) および [Zenn の解説記事](/articles/gasnuki-publish/) を参照してください。
-`;
-
 const { library } = Astro.props;
-const { libraries } = await getContent();
-
-const fullMarkdown =
-  library.slug === 'gasnuki' && !library.markdown.includes('クイックスタート')
-    ? `${library.markdown.trim()}\n${GASNUKI_QUICKSTART_MARKDOWN}`
-    : library.markdown;
-
-const { html, headings, hasEmbeds } = await renderMarkdown(fullMarkdown);
+const { libraries, articles } = await getContent();
+const { html, headings, hasEmbeds } = await renderMarkdown(library.markdown);
 const otherLibraries = libraries.filter((item) => item.slug !== library.slug);
+const relatedArticles = findRelatedArticles(articles, {
+  slug: library.slug,
+  name: library.name,
+  tags: [library.category],
+});
 ---
 
 <Base
@@ -254,16 +149,47 @@ const otherLibraries = libraries.filter((item) => item.slug !== library.slug);
 
       <div class="znc doc-content" set:html={html} />
 
+      {
+        relatedArticles.length > 0 && (
+          <section class="project-section mt-12">
+            <h2>関連する技術記事</h2>
+            <div class="mt-4 grid gap-3">
+              {relatedArticles.map(article => (
+                <a class="related-article-card" href={article.url}>
+                  <div>
+                    <time datetime={article.date}>
+                      {formatDate(article.date)}
+                    </time>
+                    <strong>{article.title}</strong>
+                  </div>
+                  <span aria-hidden="true">→</span>
+                </a>
+              ))}
+            </div>
+          </section>
+        )
+      }
+
       <footer class="article-end mt-12 border-t border-line pt-8">
         <div class="flex flex-wrap items-center justify-between gap-4">
-          <a
-            class="button outline"
-            href={library.repoUrl}
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            GitHub README で詳細を見る <span aria-hidden="true">↗</span>
-          </a>
+          <div class="flex flex-wrap gap-3">
+            <a
+              class="button outline"
+              href={library.repoUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              GitHub README で詳細を見る <span aria-hidden="true">↗</span>
+            </a>
+            <a
+              class="button outline"
+              href={library.npmUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              npm パッケージを見る <span aria-hidden="true">↗</span>
+            </a>
+          </div>
 
           {
             otherLibraries.map(other => (
