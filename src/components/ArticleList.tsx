@@ -38,9 +38,12 @@ export default function ArticleList({
   const latestReactionDate = getLatestReactionDate(articles);
 
   const isSecondaryActive = active !== null && secondaryTags.includes(active);
-  const displayedTags =
-    showAllTags || isSecondaryActive
-      ? [...primaryTags, ...secondaryTags]
+  const hiddenSecondaryCount =
+    secondaryTags.length - (isSecondaryActive ? 1 : 0);
+  const displayedTags = showAllTags
+    ? [...primaryTags, ...secondaryTags]
+    : isSecondaryActive
+      ? [...primaryTags, active]
       : primaryTags;
 
   return (
@@ -59,18 +62,19 @@ export default function ArticleList({
               </button>
             ))}
 
-            {secondaryTags.length > 0 && (
-              <button
-                type="button"
-                className="filter-more-toggle"
-                aria-expanded={showAllTags || isSecondaryActive}
-                onClick={() => setShowAllTags((prev) => !prev)}
-              >
-                {showAllTags || isSecondaryActive
-                  ? '詳細タグを閉じる'
-                  : `詳細なタグで絞り込む (+${secondaryTags.length})`}
-              </button>
-            )}
+            {(showAllTags || hiddenSecondaryCount > 0) &&
+              secondaryTags.length > 0 && (
+                <button
+                  type="button"
+                  className="filter-more-toggle"
+                  aria-expanded={showAllTags}
+                  onClick={() => setShowAllTags((prev) => !prev)}
+                >
+                  {showAllTags
+                    ? '詳細タグを閉じる'
+                    : `詳細なタグで絞り込む (+${hiddenSecondaryCount})`}
+                </button>
+              )}
           </fieldset>
 
           <div className="filters-meta">

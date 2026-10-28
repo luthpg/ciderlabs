@@ -23,7 +23,7 @@ export const GET: APIRoute = async () => {
       title: article.title,
       href: article.url,
       kind: '技術記事',
-      keywords: `${cleanExcerpt(article.description)} ${normalizeTags(article.tags).join(' ')}`,
+      keywords: `${cleanExcerpt(article.description, Number.POSITIVE_INFINITY)} ${normalizeTags(article.tags).join(' ')}`,
     })),
     ...libraries.map((library) => ({
       title: library.name,

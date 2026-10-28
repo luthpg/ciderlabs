@@ -97,10 +97,20 @@ function parseFenceAtLine(
     const candidate = lines[dataLine + offset];
     if (candidate === undefined) continue;
 
-    const match = /^\s*(?:`{3,}|~{3,})([^\s:`~]*)(?::(.+))?$/.exec(candidate);
+    const match =
+      /^\s*(?:`{3,}|~{3,})([^\s:`~]*(?:\s+[^\s:`~]+)*)(?::(.+))?$/.exec(
+        candidate,
+      );
     if (match) {
+      const tokens = (match[1] ?? '')
+        .trim()
+        .toLowerCase()
+        .split(/\s+/)
+        .filter(Boolean);
+      const lang = tokens.find((token) => token !== 'diff') ?? tokens[0] ?? '';
+
       return {
-        lang: (match[1] ?? '').trim().toLowerCase(),
+        lang,
         filename: (match[2] ?? '').trim(),
       };
     }
