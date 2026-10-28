@@ -1,6 +1,7 @@
 ---
 import type { GetStaticPaths } from 'astro';
 import 'zenn-content-css/lib/index.css';
+import CopyMarkdownButton from '../../components/CopyMarkdownButton.astro';
 import { ProjectVisual } from '../../components/HomeSections';
 import { site } from '../../config/site';
 import Base from '../../layouts/Base.astro';
@@ -13,7 +14,10 @@ import {
   projectDetailHref,
   projectSlug,
 } from '../../lib/content';
-import { renderMarkdown } from '../../lib/markdown.server';
+import {
+  renderMarkdown,
+  sanitizeMarkdownForCopy,
+} from '../../lib/markdown.server';
 
 export const getStaticPaths = (async () => {
   const { projects } = await getContent();
@@ -34,6 +38,10 @@ const { projects, articles } = await getContent();
 const rendered = project.markdown
   ? await renderMarkdown(project.markdown)
   : null;
+const copyMarkdown = sanitizeMarkdownForCopy(project.markdown ?? '', {
+  title: project.name,
+  description: project.description,
+});
 const relatedArticles = findRelatedArticles(articles, {
   slug,
   name: project.name,
@@ -131,6 +139,7 @@ const relatedArticles = findRelatedArticles(articles, {
               </a>
             )
           }
+          <CopyMarkdownButton markdown={copyMarkdown} />
         </div>
       </header>
 

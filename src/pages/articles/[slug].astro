@@ -2,6 +2,7 @@
 import type { GetStaticPaths } from 'astro';
 import 'zenn-content-css/lib/index.css';
 import '../../styles/articles.css';
+import CopyMarkdownButton from '../../components/CopyMarkdownButton.astro';
 import Reactions from '../../components/Reactions';
 import { site } from '../../config/site';
 import Base from '../../layouts/Base.astro';
@@ -83,7 +84,10 @@ const displayDescription = cleanExcerpt(article.description, 140);
         </p>
 
         <p class="lead">{displayDescription}</p>
-        <Reactions article={article} showFetchedAt />
+        <div class="mt-4 flex flex-wrap items-center justify-between gap-4">
+          <Reactions article={article} showFetchedAt />
+          <CopyMarkdownButton markdown={article.markdown} />
+        </div>
       </header>
 
       {article.headings.length > 0 && (

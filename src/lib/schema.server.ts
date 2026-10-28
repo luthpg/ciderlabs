@@ -145,6 +145,7 @@ export const articleSchema = z.object({
 });
 
 export const articleDocumentSchema = articleSchema.extend({
+  markdown: z.string(),
   html: z.string(),
   headings: z.array(
     z.object({

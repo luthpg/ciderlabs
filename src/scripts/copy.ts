@@ -21,6 +21,12 @@ document.addEventListener('click', async (event) => {
 
   const status = document.querySelector<HTMLElement>('#copy-status');
   const label = button.querySelector<HTMLElement>('.copy-label');
+  const defaultLabel =
+    button.dataset.defaultLabel ?? label?.textContent ?? 'コピー';
+
+  if (!button.dataset.defaultLabel) {
+    button.dataset.defaultLabel = defaultLabel;
+  }
 
   try {
     await navigator.clipboard.writeText(value);
@@ -29,7 +35,7 @@ document.addEventListener('click', async (event) => {
     }
     button.dataset.copied = 'true';
     if (label) {
-      label.textContent = 'コピー済み';
+      label.textContent = button.dataset.copiedLabel ?? 'コピー済み';
     } else if (button.hasAttribute('data-copy')) {
       button.textContent = '✓ コピー済み';
     }
@@ -42,9 +48,9 @@ document.addEventListener('click', async (event) => {
     const nextTimer = setTimeout(() => {
       delete button.dataset.copied;
       if (label) {
-        label.textContent = 'コピー';
+        label.textContent = button.dataset.defaultLabel ?? 'コピー';
       } else if (button.hasAttribute('data-copy')) {
-        button.textContent = 'コピー';
+        button.textContent = button.dataset.defaultLabel ?? 'コピー';
       }
     }, 2000);
     buttonTimers.set(button, nextTimer);

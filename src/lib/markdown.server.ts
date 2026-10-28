@@ -109,6 +109,111 @@ function parseFenceAtLine(
   return { lang: '', filename: '' };
 }
 
+function stripCommentsOutsideInlineCode(segment: string): string {
+  const inlineCodeRegex = /(`+[^`\n]+`+)/g;
+  const parts = segment.split(inlineCodeRegex);
+
+  return parts
+    .map((part, index) => {
+      // Odd indices are matched inline code spans (`...`)
+      if (index % 2 === 1) return part;
+
+      return part
+        .replace(/<!--[\s\S]*?-->/g, '')
+        .replace(
+          /^[ \t]*\[\/\/\]:[ \t]*#[ \t]*(?:\([^\n)]*\)|"[^\n"]*"|'[^\n']*')[ \t]*$/gm,
+          '',
+        );
+    })
+    .join('');
+}
+
+export function sanitizeMarkdownForCopy(
+  rawMarkdown: string,
+  options?: {
+    title?: string;
+    description?: string;
+    command?: string;
+  },
+): string {
+  const withoutFrontmatter = rawMarkdown
+    .replace(/^\uFEFF/, '')
+    .replace(/\r\n?/g, '\n')
+    .replace(/^---\n[\s\S]*?\n---(?:\n|$)/, '');
+
+  const lines = withoutFrontmatter.split('\n');
+  const chunks: { isCode: boolean; text: string }[] = [];
+  let buffer: string[] = [];
+  let inFence = false;
+  let fenceChar = '';
+  let fenceLen = 0;
+
+  for (const line of lines) {
+    if (!inFence) {
+      const openMatch = /^[ \t]*(`{3,}|~{3,})/.exec(line);
+      if (openMatch?.[1]) {
+        if (buffer.length > 0) {
+          chunks.push({ isCode: false, text: buffer.join('\n') });
+          buffer = [];
+        }
+        inFence = true;
+        fenceChar = openMatch[1][0] ?? '`';
+        fenceLen = openMatch[1].length;
+        buffer.push(line);
+      } else {
+        buffer.push(line);
+      }
+    } else {
+      buffer.push(line);
+      const closeRegex = new RegExp(
+        `^[ \\t]*\\${fenceChar}{${fenceLen},}[ \\t]*$`,
+      );
+      if (closeRegex.test(line)) {
+        chunks.push({ isCode: true, text: buffer.join('\n') });
+        buffer = [];
+        inFence = false;
+        fenceChar = '';
+        fenceLen = 0;
+      }
+    }
+  }
+
+  if (buffer.length > 0) {
+    chunks.push({ isCode: inFence, text: buffer.join('\n') });
+  }
+
+  const cleanedBody = chunks
+    .map((chunk) =>
+      chunk.isCode ? chunk.text : stripCommentsOutsideInlineCode(chunk.text),
+    )
+    .join('\n')
+    .replace(/\n{3,}/g, '\n\n')
+    .trim();
+
+  const sections: string[] = [];
+  const title = options?.title?.trim();
+  const description = options?.description?.trim();
+  const command = options?.command?.trim();
+
+  if (title && !cleanedBody.startsWith('# ')) {
+    sections.push(`# ${title}`);
+  }
+
+  if (description && !cleanedBody.startsWith(description)) {
+    sections.push(description);
+  }
+
+  if (command) {
+    sections.push(`\`\`\`bash\n${command}\n\`\`\``);
+  }
+
+  if (cleanedBody) {
+    sections.push(cleanedBody);
+  }
+
+  return sections.join('\n\n').trim();
+}
+
 export async function renderMarkdown(markdown: string) {
   const lines = markdown.split(/\r?\n/);
   const html = await markdownToHtml(markdown, {

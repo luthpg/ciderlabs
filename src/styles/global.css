@@ -649,6 +649,12 @@
   .install button[data-copied="true"] {
     @apply border-primary bg-primary text-white;
   }
+  .copy-markdown-btn {
+    @apply inline-flex min-h-9 shrink-0 items-center gap-1.5 rounded-lg border border-primary/25 bg-card px-3.5 py-1.5 text-xs font-bold text-primary transition-colors hover:bg-mint;
+  }
+  .copy-markdown-btn[data-copied="true"] {
+    @apply border-primary bg-primary text-white;
+  }
   .docs-banner {
     @apply mt-8 flex flex-wrap items-center justify-between gap-6 rounded-2xl bg-peach p-6 md:p-9;
   }
@@ -819,7 +825,8 @@
   html[data-theme="dark"] .install code {
     color: var(--color-ink);
   }
-  html[data-theme="dark"] .install button {
+  html[data-theme="dark"] .install button,
+  html[data-theme="dark"] .copy-markdown-btn:not([data-copied="true"]) {
     border-color: var(--color-line);
     color: var(--color-ink);
   }

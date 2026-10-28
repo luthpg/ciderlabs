@@ -2,6 +2,7 @@
 import type { GetStaticPaths } from 'astro';
 import 'zenn-content-css/lib/index.css';
 
+import CopyMarkdownButton from '../../components/CopyMarkdownButton.astro';
 import { site } from '../../config/site';
 import Base from '../../layouts/Base.astro';
 import { getContent } from '../../lib/cms.server';
@@ -12,7 +13,10 @@ import {
   type Library,
   projectDetailHref,
 } from '../../lib/content';
-import { renderMarkdown } from '../../lib/markdown.server';
+import {
+  renderMarkdown,
+  sanitizeMarkdownForCopy,
+} from '../../lib/markdown.server';
 
 export const getStaticPaths = (async () => {
   const { libraries } = await getContent();
@@ -30,6 +34,11 @@ interface Props {
 const { library } = Astro.props;
 const { projects, libraries, articles } = await getContent();
 const { html, headings, hasEmbeds } = await renderMarkdown(library.markdown);
+const copyMarkdown = sanitizeMarkdownForCopy(library.markdown, {
+  title: library.name,
+  description: library.description,
+  command: library.command,
+});
 const otherLibraries = libraries.filter((item) => item.slug !== library.slug);
 const linkedProject = projects.find(
   (item) => item.librarySlug === library.slug,
@@ -100,6 +109,7 @@ const relatedArticles = findRelatedArticles(articles, {
           <a href={library.npmUrl} target="_blank" rel="noopener noreferrer">
             npm ↗
           </a>
+          <CopyMarkdownButton markdown={copyMarkdown} />
         </div>
 
         <div class="install">

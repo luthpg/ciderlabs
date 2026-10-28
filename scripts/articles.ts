@@ -4,7 +4,10 @@ import path from 'node:path';
 import { load } from 'cheerio';
 import { z } from 'zod';
 import { normalizeTags } from '../src/lib/content.ts';
-import { renderMarkdown } from '../src/lib/markdown.server.ts';
+import {
+  renderMarkdown,
+  sanitizeMarkdownForCopy,
+} from '../src/lib/markdown.server.ts';
 import type { ArticleDocument } from '../src/lib/schema.server.ts';
 import {
   buildSourceIndex,
@@ -151,6 +154,9 @@ export async function buildArticles(
           article.qiita.id
         : undefined,
       reactions: {},
+      markdown: sanitizeMarkdownForCopy(markdown.body, {
+        title: meta.title,
+      }),
       html: $.html(),
       headings: rendered.headings,
       hasEmbeds: rendered.hasEmbeds,
