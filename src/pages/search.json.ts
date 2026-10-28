@@ -13,14 +13,12 @@ export const GET: APIRoute = async () => {
   const { projects, articles, libraries } = await getContent();
 
   const items: SearchItem[] = [
-    ...projects
-      .filter((project) => !project.librarySlug)
-      .map((project) => ({
-        title: project.name,
-        href: projectDetailHref(project),
-        kind: 'つくったもの',
-        keywords: `${project.description} ${project.category} ${project.tags.join(' ')}`,
-      })),
+    ...projects.map((project) => ({
+      title: project.name,
+      href: projectDetailHref(project),
+      kind: 'つくったもの',
+      keywords: `${project.description} ${project.category} ${project.tags.join(' ')}`,
+    })),
     ...articles.map((article) => ({
       title: article.title,
       href: article.url,

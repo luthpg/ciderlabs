@@ -427,9 +427,7 @@ function ProjectCard({
   project: Project;
   large?: boolean;
 }) {
-  const detailUrl = project.librarySlug
-    ? docHref(project.librarySlug)
-    : projectDetailHref(project);
+  const detailUrl = projectDetailHref(project);
 
   return (
     <article className={`project-card ${large ? 'featured' : ''}`}>
@@ -451,9 +449,10 @@ function ProjectCard({
         </div>
 
         <div className="card-links">
-          <a href={detailUrl}>
-            {project.librarySlug ? '導入ガイド →' : '詳細を見る →'}
-          </a>
+          <a href={detailUrl}>詳細を見る →</a>
+          {project.librarySlug && (
+            <a href={docHref(project.librarySlug)}>導入ガイド →</a>
+          )}
           {project.url && (
             <a href={project.url} target="_blank" rel="noopener noreferrer">
               サイトを見る ↗

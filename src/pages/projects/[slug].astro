@@ -18,12 +18,10 @@ import { renderMarkdown } from '../../lib/markdown.server';
 export const getStaticPaths = (async () => {
   const { projects } = await getContent();
 
-  return projects
-    .filter((project) => !project.librarySlug)
-    .map((project) => ({
-      params: { slug: projectSlug(project) },
-      props: { project },
-    }));
+  return projects.map((project) => ({
+    params: { slug: projectSlug(project) },
+    props: { project },
+  }));
 }) satisfies GetStaticPaths;
 
 interface Props {
@@ -66,19 +64,14 @@ const relatedArticles = findRelatedArticles(articles, {
 
       <nav aria-label="つくったもの一覧">
         {
-          projects.map((item) => {
-            const href = item.librarySlug
-              ? docHref(item.librarySlug)
-              : projectDetailHref(item);
-            return (
-              <a
-                href={href}
-                aria-current={item.id === project.id ? 'page' : undefined}
-              >
-                {item.name.split(/\s+[-—–]\s+/)[0]?.trim() || item.name}
-              </a>
-            );
-          })
+          projects.map((item) => (
+            <a
+              href={projectDetailHref(item)}
+              aria-current={item.id === project.id ? 'page' : undefined}
+            >
+              {item.name.split(/\s+[-—–]\s+/)[0]?.trim() || item.name}
+            </a>
+          ))
         }
       </nav>
     </aside>
@@ -130,7 +123,10 @@ const relatedArticles = findRelatedArticles(articles, {
           }
           {
             project.librarySlug && (
-              <a class="button outline" href={docHref(project.librarySlug)}>
+              <a
+                class={`button ${project.url ? 'outline' : 'primary'}`}
+                href={docHref(project.librarySlug)}
+              >
                 導入ガイドを読む <span aria-hidden="true">→</span>
               </a>
             )

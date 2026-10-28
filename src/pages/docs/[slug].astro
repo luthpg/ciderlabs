@@ -10,6 +10,7 @@ import {
   findRelatedArticles,
   formatDate,
   type Library,
+  projectDetailHref,
 } from '../../lib/content';
 import { renderMarkdown } from '../../lib/markdown.server';
 
@@ -27,9 +28,12 @@ interface Props {
 }
 
 const { library } = Astro.props;
-const { libraries, articles } = await getContent();
+const { projects, libraries, articles } = await getContent();
 const { html, headings, hasEmbeds } = await renderMarkdown(library.markdown);
 const otherLibraries = libraries.filter((item) => item.slug !== library.slug);
+const linkedProject = projects.find(
+  (item) => item.librarySlug === library.slug,
+);
 const relatedArticles = findRelatedArticles(articles, {
   slug: library.slug,
   name: library.name,
@@ -83,6 +87,13 @@ const relatedArticles = findRelatedArticles(articles, {
         <p class="lead">{library.description}</p>
 
         <div class="card-links">
+          {
+            linkedProject && (
+              <a href={projectDetailHref(linkedProject)}>
+                プロジェクト紹介 →
+              </a>
+            )
+          }
           <a href={library.repoUrl} target="_blank" rel="noopener noreferrer">
             GitHub ↗
           </a>

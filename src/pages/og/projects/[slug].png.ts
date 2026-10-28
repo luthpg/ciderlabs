@@ -6,12 +6,10 @@ import { ogPngResponse, renderOgImage } from '../../../lib/og.server';
 export const getStaticPaths = (async () => {
   const { projects } = await getContent();
 
-  return projects
-    .filter((project) => !project.librarySlug)
-    .map((project) => ({
-      params: { slug: projectSlug(project) },
-      props: { project },
-    }));
+  return projects.map((project) => ({
+    params: { slug: projectSlug(project) },
+    props: { project },
+  }));
 }) satisfies GetStaticPaths;
 
 export const GET: APIRoute<{ project: Project }, { slug: string }> = async ({
