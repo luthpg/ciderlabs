@@ -3,8 +3,10 @@ import { type Article, formatDate } from '../lib/content';
 
 export default function Reactions({
   article,
+  showFetchedAt = false,
 }: {
   article: Pick<Article, 'zennUrl' | 'qiitaUrl' | 'reactions'>;
+  showFetchedAt?: boolean;
 }) {
   const sources = [
     {
@@ -26,34 +28,39 @@ export default function Reactions({
       className="platform-reactions"
       aria-label="外部サービスのリアクション"
     >
-      {sources.map(({ name, url, value }) => (
-        <div className="platform-reaction" key={name}>
-          <a href={url}>
-            <strong>{name} ↗</strong>
-          </a>
+      {sources.map(({ name, url, value }) => {
+        const hasLikes = value != null && value.likes > 0;
+        const hasStocks =
+          value != null && value.stocks !== undefined && value.stocks > 0;
+        const hasComments = value != null && value.comments > 0;
 
-          {value ? (
-            <>
-              <span>いいね {value.likes}</span>
+        return (
+          <div className="platform-reaction" key={name}>
+            <a href={url} target="_blank" rel="noopener noreferrer">
+              <strong>{name} ↗</strong>
+            </a>
 
-              {value.stocks !== undefined && (
-                <span>ストック {value.stocks}</span>
-              )}
+            {hasLikes && <span>いいね {value.likes}</span>}
 
-              <a href={url}>コメント {value.comments}</a>
+            {hasStocks && <span>ストック {value.stocks}</span>}
 
+            {hasComments && (
+              <a href={url} target="_blank" rel="noopener noreferrer">
+                コメント {value.comments}
+              </a>
+            )}
+
+            {showFetchedAt && value?.fetchedAt && (
               <small>
                 取得{' '}
                 <time dateTime={value.fetchedAt} title={value.fetchedAt}>
                   {formatDate(value.fetchedAt)}
                 </time>
               </small>
-            </>
-          ) : (
-            <small>件数は未取得</small>
-          )}
-        </div>
-      ))}
+            )}
+          </div>
+        );
+      })}
     </fieldset>
   );
 }

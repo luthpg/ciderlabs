@@ -1,0 +1,41 @@
+---
+import ArticleList from '../../components/ArticleList';
+import { site } from '../../config/site';
+import Base from '../../layouts/Base.astro';
+import { getContent } from '../../lib/cms.server';
+
+const content = await getContent();
+---
+
+<Base
+  title={`技術記事一覧 | ${site.name}`}
+  description="GAS・TypeScript・個人開発・セキュリティなど、開発のなかで試したことや設計の記録。"
+>
+  <section class="section shell">
+    <a class="back-link" href="/#writing">← トップへ戻る</a>
+
+    <div class="section-heading mt-6">
+      <div>
+        <p class="eyebrow">WRITING ARCHIVE</p>
+        <h1>つくりながら、<wbr />考えたこと。</h1>
+      </div>
+
+      <div class="flex flex-wrap items-center gap-5">
+        <a class="text-link" href={site.zenn} target="_blank" rel="noopener noreferrer">
+          Zenn ↗
+        </a>
+        <a class="text-link" href={site.qiita} target="_blank" rel="noopener noreferrer">
+          Qiita ↗
+        </a>
+      </div>
+    </div>
+
+    <p class="lead max-w-3xl">
+      Google Apps Script (GAS) や TypeScript のライブラリ開発、Webアプリの認証・暗号化設計、日々の開発環境の改善について書いています。
+    </p>
+
+    <div class="mt-8">
+      <ArticleList articles={content.articles} showFilters client:load />
+    </div>
+  </section>
+</Base>

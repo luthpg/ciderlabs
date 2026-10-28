@@ -19,6 +19,7 @@ pnpm-debug.log*
 .env*.local
 .dev.vars
 .dev.vars.*
+.local
 
 # cloudflare wrangler
 .wrangler/

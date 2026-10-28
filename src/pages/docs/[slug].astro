@@ -21,9 +21,125 @@ interface Props {
   library: Library;
 }
 
+const GASNUKI_QUICKSTART_MARKDOWN =
+  `
+
+## 必要なもの
+
+- **Node.js** 18 以上（フロントエンドのビルド環境）
+- **TypeScript** 5.0 以上推奨
+- Google Apps Script (` +
+  '`google.script.run`' +
+  `) を利用する Web アプリプロジェクト（React / Vue / Vanilla TS など）
+
+## クイックスタート
+
+### 1. インストール
+
+フロントエンド側のプロジェクトに ` +
+  '`@ciderjs/gasnuki`' +
+  ` をインストールします。
+
+\`\`\`bash
+npm install @ciderjs/gasnuki
+\`\`\`
+
+### 2. GAS側（サーバー）の関数定義と型エクスポート
+
+GAS 側で公開するグローバル関数を定義し、その型オブジェクトを ` +
+  '`export type`' +
+  ` でエクスポートします。
+
+\`\`\`ts:server/code.ts GAS側
+export function getUserProfile(userId: string) {
+  return {
+    id: userId,
+    name: 'luth',
+    role: 'admin' as const,
+  };
+}
+
+export function saveSettings(input: { notify: boolean; theme: 'light' | 'dark' }) {
+  PropertiesService.getScriptProperties().setProperty(
+    'SETTINGS',
+    JSON.stringify(input),
+  );
+  return { ok: true };
+}
+
+// フロントエンドへ共有するための関数型マップ
+export type ServerScripts = {
+  getUserProfile: typeof getUserProfile;
+  saveSettings: typeof saveSettings;
+};
+\`\`\`
+
+### 3. フロントエンド側（クライアント）からの呼び出し
+
+GAS 側から ` +
+  '`import type`' +
+  ` で型定義だけを取り込み、クライアントを生成します。コールバック形式の ` +
+  '`google.script.run`' +
+  ` がすべて型安全な ` +
+  '`Promise`' +
+  ` として呼び出せます。
+
+\`\`\`ts:client/api.ts フロントエンド側
+import { createClient } from '@ciderjs/gasnuki';
+import type { ServerScripts } from '../server/code';
+
+export const gas = createClient<ServerScripts>();
+
+async function main() {
+  // 引数と戻り値の型が自動推論される
+  const profile = await gas.getUserProfile('user-01');
+  console.log(profile.name);
+
+  const result = await gas.saveSettings({
+    notify: true,
+    theme: 'dark',
+  });
+  console.log(result.ok);
+}
+\`\`\`
+
+### 4. ローカル開発時のモック設定
+
+ローカルの Vite 開発サーバー上など、` +
+  '`window.google.script.run`' +
+  ` が存在しない環境では、モック実装を渡すことでブラウザ単体で画面開発を進められます。
+
+\`\`\`ts:client/api.mock.ts ローカル開発用モック
+import { createClient } from '@ciderjs/gasnuki';
+import type { ServerScripts } from '../server/code';
+
+export const gas = createClient<ServerScripts>({
+  mock: {
+    getUserProfile: async (userId) => ({
+      id: userId,
+      name: 'Local Mock User',
+      role: 'admin',
+    }),
+    saveSettings: async () => ({ ok: true }),
+  },
+});
+\`\`\`
+
+## 詳細なAPI仕様・サンプル
+
+オプション設定やエラーハンドリングの詳細については、[GitHub リポジトリの README](https://github.com/luthpg/gasnuki) および [Zenn の解説記事](/articles/gasnuki-publish/) を参照してください。
+`;
+
 const { library } = Astro.props;
 const { libraries } = await getContent();
-const { html, headings, hasEmbeds } = await renderMarkdown(library.markdown);
+
+const fullMarkdown =
+  library.slug === 'gasnuki' && !library.markdown.includes('クイックスタート')
+    ? `${library.markdown.trim()}\n${GASNUKI_QUICKSTART_MARKDOWN}`
+    : library.markdown;
+
+const { html, headings, hasEmbeds } = await renderMarkdown(fullMarkdown);
+const otherLibraries = libraries.filter((item) => item.slug !== library.slug);
 ---
 
 <Base
@@ -62,24 +178,58 @@ const { html, headings, hasEmbeds } = await renderMarkdown(library.markdown);
     </aside>
 
     <article class="docs-article">
+      <div class="mb-6 lg:hidden">
+        <a class="back-link" href="/#libraries">← ライブラリ一覧へ戻る</a>
+      </div>
+
       <header class="docs-title">
         <p class="eyebrow">{library.category} / 導入ガイド</p>
         <h1>{library.name}</h1>
         <p class="lead">{library.description}</p>
 
         <div class="card-links">
-          <a href={library.repoUrl}>GitHub ↗</a>
-          <a href={library.npmUrl}>npm ↗</a>
+          <a href={library.repoUrl} target="_blank" rel="noopener noreferrer">
+            GitHub ↗
+          </a>
+          <a href={library.npmUrl} target="_blank" rel="noopener noreferrer">
+            npm ↗
+          </a>
         </div>
 
         <div class="install">
           <code>{library.command}</code>
           <button
             type="button"
+            class="copy-btn"
             data-copy={library.command}
             aria-label="インストールコマンドをコピー"
           >
-            コピー
+            <svg
+              class="copy-icon"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              aria-hidden="true"
+            >
+              <rect width="14" height="14" x="8" y="8" rx="2" ry="2"></rect>
+              <path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"></path>
+            </svg>
+            <svg
+              class="check-icon"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2.2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              aria-hidden="true"
+            >
+              <path d="M20 6 9 17l-5-5"></path>
+            </svg>
+            <span class="copy-label">コピー</span>
           </button>
         </div>
       </header>
@@ -103,6 +253,27 @@ const { html, headings, hasEmbeds } = await renderMarkdown(library.markdown);
       }
 
       <div class="znc doc-content" set:html={html} />
+
+      <footer class="article-end mt-12 border-t border-line pt-8">
+        <div class="flex flex-wrap items-center justify-between gap-4">
+          <a
+            class="button outline"
+            href={library.repoUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            GitHub README で詳細を見る <span aria-hidden="true">↗</span>
+          </a>
+
+          {
+            otherLibraries.map(other => (
+              <a class="text-link" href={docHref(other.slug)}>
+                {other.name} の導入ガイドを読む →
+              </a>
+            ))
+          }
+        </div>
+      </footer>
     </article>
 
     <aside class="desktop-toc">

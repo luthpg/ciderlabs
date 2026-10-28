@@ -1,0 +1,170 @@
+---
+import type { GetStaticPaths } from 'astro';
+import { ProjectVisual } from '../../components/HomeSections';
+import { site } from '../../config/site';
+import Base from '../../layouts/Base.astro';
+import { getContent } from '../../lib/cms.server';
+import {
+  docHref,
+  formatDate,
+  type Project,
+  projectDetailHref,
+  projectSlug,
+} from '../../lib/content';
+import { getProjectSpec } from '../../lib/projects';
+
+export const getStaticPaths = (async () => {
+  const { projects } = await getContent();
+
+  return projects.map((project) => ({
+    params: { slug: projectSlug(project) },
+    props: { project },
+  }));
+}) satisfies GetStaticPaths;
+
+interface Props {
+  project: Project;
+}
+
+const { project } = Astro.props;
+const { projects, articles } = await getContent();
+const spec = getProjectSpec(project);
+const relatedArticles = articles.filter((article) =>
+  spec.relatedArticleSlugs.includes(article.slug),
+);
+---
+
+<Base
+  title={`${project.name} | ${site.name}`}
+  description={spec.userSummary}
+  ogImage={`/og/projects/${spec.slug}.png`}
+>
+  <div class="shell docs-layout">
+    <aside class="docs-sidebar">
+      <a class="back-link" href="/#projects">← つくったもの一覧</a>
+      <p class="eyebrow">PROJECTS</p>
+
+      <nav aria-label="つくったもの一覧">
+        {
+          projects.map((item) => {
+            const href = item.librarySlug
+              ? docHref(item.librarySlug)
+              : projectDetailHref(item);
+            return (
+              <a
+                href={href}
+                aria-current={item.id === project.id ? 'page' : undefined}
+              >
+                {item.name.split(/\s+[-—–]\s+/)[0]?.trim() || item.name}
+              </a>
+            );
+          })
+        }
+      </nav>
+    </aside>
+
+    <article class="docs-article">
+      <div class="mb-6 lg:hidden">
+        <a class="back-link" href="/#projects">← つくったもの一覧へ戻る</a>
+      </div>
+
+      <header class="docs-title">
+        <p class="eyebrow">{project.category} / OVERVIEW</p>
+        <h1>{project.name}</h1>
+        <p class="lead">{spec.userSummary}</p>
+        <p class="text-sm text-body">{spec.techSummary}</p>
+
+        <div class="tags mt-4">
+          {project.tags.map((tag) => <span>{tag}</span>)}
+        </div>
+
+        <div class="mt-6 flex flex-wrap gap-3">
+          {
+            project.url && (
+              <a
+                class="button primary"
+                href={project.url}
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                サイトを開く <span aria-hidden="true">↗</span>
+              </a>
+            )
+          }
+          {
+            project.repoUrl && (
+              <a
+                class="button outline"
+                href={project.repoUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                GitHub リポジトリ <span aria-hidden="true">↗</span>
+              </a>
+            )
+          }
+          {
+            project.librarySlug && (
+              <a class="button outline" href={docHref(project.librarySlug)}>
+                導入ガイドを読む <span aria-hidden="true">→</span>
+              </a>
+            )
+          }
+        </div>
+      </header>
+
+      <div class="project-detail-visual mb-10 overflow-hidden rounded-2xl border border-line">
+        <ProjectVisual project={project} large />
+      </div>
+
+      <div class="project-detail-sections">
+        <section class="project-section">
+          <h2>解決したかった課題</h2>
+          <p>{spec.problem}</p>
+        </section>
+
+        <section class="project-section">
+          <h2>主な機能と利用場面</h2>
+          <ul class="project-feature-list">
+            {spec.features.map((feature) => <li>{feature}</li>)}
+          </ul>
+        </section>
+
+        <section class="project-section">
+          <h2>設計・実装上の工夫</h2>
+          <dl class="project-highlights-grid">
+            {
+              spec.highlights.map((item) => (
+                <div class="project-highlight-card">
+                  <dt>{item.label}</dt>
+                  <dd>{item.text}</dd>
+                </div>
+              ))
+            }
+          </dl>
+        </section>
+
+        {
+          relatedArticles.length > 0 && (
+            <section class="project-section">
+              <h2>関連する技術記事</h2>
+              <div class="mt-4 grid gap-3">
+                {relatedArticles.map((article) => (
+                  <a class="related-article-card" href={article.url}>
+                    <div>
+                      <time datetime={article.date}>
+                        {formatDate(article.date)}
+                      </time>
+                      <strong>{article.title}</strong>
+                    </div>
+                    <span aria-hidden="true">→</span>
+                  </a>
+                ))}
+              </div>
+            </section>
+          )
+        }
+      </div>
+    </article>
+  </div>
+</Base>

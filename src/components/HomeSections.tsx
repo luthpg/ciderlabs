@@ -3,9 +3,10 @@ import {
   docHref,
   type Library,
   type Project,
-  projectHref,
+  projectDetailHref,
   type SiteContent,
 } from '../lib/content';
+import { getProjectSpec } from '../lib/projects';
 
 export function Hero({
   counts,
@@ -27,15 +28,15 @@ export function Hero({
           <p className="lead">
             日々の「ちょっと困った」を、コードで心地よく。
             <br />
-            個人開発と技術の記録を、ここから。
+            GASとTypeScriptを中心に、Webアプリや開発者向けOSSをつくっています。
           </p>
 
           <div className="flex flex-wrap gap-3">
             <a className="button primary" href="#projects">
-              つくったものを見る <span>↗</span>
+              つくったものを見る <span aria-hidden="true">↓</span>
             </a>
             <a className="button outline" href="#writing">
-              技術記事を読む <span>→</span>
+              技術記事を読む <span aria-hidden="true">↓</span>
             </a>
           </div>
 
@@ -83,14 +84,14 @@ export function Hero({
 
       <div className="shell stats">
         {[
-          ['つくったもの', counts.projects.length],
-          ['技術記事', counts.articles.length],
-          ['ライブラリ', counts.libraries.length],
-        ].map(([label, count]) => (
-          <div key={label}>
+          ['つくったもの', counts.projects.length, '#projects'],
+          ['技術記事', counts.articles.length, '#writing'],
+          ['ライブラリ', counts.libraries.length, '#libraries'],
+        ].map(([label, count, href]) => (
+          <a key={label} href={String(href)} className="stat-item">
             <strong>{String(count).padStart(2, '0')}</strong>
             <span>{label}</span>
-          </div>
+          </a>
         ))}
         <p>
           小さくつくる。
@@ -102,7 +103,7 @@ export function Hero({
   );
 }
 
-function getProjectMeta(project: Project) {
+export function getProjectMeta(project: Project) {
   const parts = project.name.split(/\s+[-—–]\s+/);
   const shortName = parts[0]?.trim() || project.name;
   const subtitle = parts[1]?.trim() || project.category;
@@ -139,7 +140,7 @@ function getProjectMeta(project: Project) {
   };
 }
 
-function ProjectVisual({
+export function ProjectVisual({
   project,
   large = false,
 }: {
@@ -426,6 +427,11 @@ function ProjectCard({
   project: Project;
   large?: boolean;
 }) {
+  const spec = getProjectSpec(project);
+  const detailUrl = project.librarySlug
+    ? docHref(project.librarySlug)
+    : projectDetailHref(project);
+
   return (
     <article className={`project-card ${large ? 'featured' : ''}`}>
       <ProjectVisual project={project} large={large} />
@@ -434,12 +440,12 @@ function ProjectCard({
         <p className="eyebrow">{project.category}</p>
 
         <h3>
-          <a href={projectHref(project)}>
-            {project.name} <span aria-hidden="true">↗</span>
-          </a>
+          <a href={detailUrl}>{project.name}</a>
         </h3>
 
-        <p>{project.description}</p>
+        <p>{spec.userSummary}</p>
+
+        {large && <p className="project-subdesc">{spec.techSummary}</p>}
 
         <div className="tags">
           {project.tags.map((tag) => (
@@ -448,10 +454,19 @@ function ProjectCard({
         </div>
 
         <div className="card-links">
-          <a href={projectHref(project)}>
-            {project.librarySlug ? 'ドキュメント' : 'サイトを見る'} →
+          <a href={detailUrl}>
+            {project.librarySlug ? '導入ガイド →' : '概要・設計を見る →'}
           </a>
-          {project.repoUrl && <a href={project.repoUrl}>GitHub ↗</a>}
+          {project.url && (
+            <a href={project.url} target="_blank" rel="noopener noreferrer">
+              サイトを見る ↗
+            </a>
+          )}
+          {project.repoUrl && (
+            <a href={project.repoUrl} target="_blank" rel="noopener noreferrer">
+              GitHub ↗
+            </a>
+          )}
         </div>
       </div>
     </article>
@@ -466,7 +481,11 @@ export function Projects({ projects }: { projects: Project[] }) {
       <div className="section-heading">
         <div>
           <p className="eyebrow">01 / PROJECTS</p>
-          <h2>「あったらいいな」を、つくりました。</h2>
+          <h2>
+            「あったらいいな」を、
+            <wbr />
+            つくりました。
+          </h2>
         </div>
         <p>日々の困りごとから生まれた、アプリと開発ツール。</p>
       </div>
@@ -494,7 +513,11 @@ export function Libraries({ libraries }: { libraries: Library[] }) {
       <div className="section-heading">
         <div>
           <p className="eyebrow">03 / OPEN SOURCE</p>
-          <h2>開発が、少し快適になる道具。</h2>
+          <h2>
+            開発が、
+            <wbr />
+            少し快適になる道具。
+          </h2>
         </div>
         <p>自分のためにつくったものを、誰かにも使えるかたちで。</p>
       </div>
@@ -518,32 +541,84 @@ export function Libraries({ libraries }: { libraries: Library[] }) {
               <code>{library.command}</code>
               <button
                 type="button"
+                className="copy-btn"
                 data-copy={library.command}
                 aria-label={`${library.name}のインストールコマンドをコピー`}
               >
-                コピー
+                <svg
+                  className="copy-icon"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  aria-hidden="true"
+                >
+                  <rect width="14" height="14" x="8" y="8" rx="2" ry="2" />
+                  <path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2" />
+                </svg>
+                <svg
+                  className="check-icon"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2.2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  aria-hidden="true"
+                >
+                  <path d="M20 6 9 17l-5-5" />
+                </svg>
+                <span className="copy-label">コピー</span>
               </button>
             </div>
 
             <div className="card-links">
               <a href={docHref(library.slug)}>導入ガイド →</a>
-              <a href={library.repoUrl}>GitHub ↗</a>
-              <a href={library.npmUrl}>npm ↗</a>
+              <a
+                href={library.repoUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                GitHub ↗
+              </a>
+              <a
+                href={library.npmUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                npm ↗
+              </a>
             </div>
           </article>
         ))}
       </div>
 
-      {libraries[0] && (
+      {libraries.length > 0 && (
         <div className="docs-banner">
           <div>
             <p className="eyebrow">GET STARTED</p>
-            <h3>「使ってみよう」を、ここから。</h3>
-            <p>インストールから最初の一歩まで、日本語のガイドで。</p>
+            <h3>
+              「使ってみよう」を、
+              <wbr />
+              ここから。
+            </h3>
+            <p>
+              インストールから最初の一歩まで、日本語の導入ガイドで解説しています。
+            </p>
           </div>
-          <a className="button primary" href={docHref(libraries[0].slug)}>
-            ドキュメントを読む →
-          </a>
+          <div className="flex flex-wrap gap-3">
+            {libraries.map((library, index) => (
+              <a
+                key={library.id}
+                className={`button ${index === 0 ? 'primary' : 'outline'}`}
+                href={docHref(library.slug)}
+              >
+                {library.name} の導入ガイド <span aria-hidden="true">→</span>
+              </a>
+            ))}
+          </div>
         </div>
       )}
     </section>
@@ -566,17 +641,71 @@ export function About() {
         <div>
           <p>{site.about}</p>
           <p className="mt-4">
-            使って、試して、気づいたことを共有する。
-            そんな循環を大切にしています。
+            実際に自分で使いながら試行錯誤し、得られた知見をOSSや技術記事として公開する循環を大切にしています。
           </p>
+
+          <dl className="about-highlights">
+            <div>
+              <dt>GAS × TypeScript の開発基盤・OSS</dt>
+              <dd>
+                型安全なRPC通信ライブラリ{' '}
+                <a href="/docs/gasnuki/">@ciderjs/gasnuki</a>{' '}
+                や、テスト・CI込みの環境構築CLI{' '}
+                <a href="/docs/gasbombe/">@ciderjs/gasbombe</a>{' '}
+                を開発・公開しています。
+              </dd>
+            </div>
+            <div>
+              <dt>日常の不便を解消するWebアプリ設計</dt>
+              <dd>
+                パスキー認証（WebAuthn）とエンドツーエンド暗号化（E2EE）を組み合わせた家族向け共有アプリ{' '}
+                <a href="/projects/poohma/">PoohMa</a>{' '}
+                など、セキュリティと使いやすさを両立する個人開発に取り組んでいます。
+              </dd>
+            </div>
+            <div>
+              <dt>実践から得た技術知見の言語化</dt>
+              <dd>
+                GASのローカル自動テスト設計や暗号化アーキテクチャなど、開発のなかでぶつかった課題と解決策を{' '}
+                <a href="/articles/">技術記事</a> として継続的に発信しています。
+              </dd>
+            </div>
+            <div>
+              <dt>活動サマリー・連絡先</dt>
+              <dd>
+                GitHub・Zenn・Qiita のアウトプットを集約した自動ポートフォリオは{' '}
+                <a href={site.lapras} target="_blank" rel="noopener noreferrer">
+                  LAPRAS ↗
+                </a>
+                、ご連絡や日々の発信は X（旧Twitter）の{' '}
+                <a href={site.x} target="_blank" rel="noopener noreferrer">
+                  {site.xHandle} ↗
+                </a>{' '}
+                からご覧いただけます。
+              </dd>
+            </div>
+          </dl>
 
           <div className="about-sign">
             <strong>
               {site.author}
               <span> / developer</span>
             </strong>
-            <a href={site.github}>GitHub ↗</a>
-            <a href={site.zenn}>Zenn ↗</a>
+            <a href={site.github} target="_blank" rel="noopener noreferrer">
+              GitHub ↗
+            </a>
+            <a href={site.zenn} target="_blank" rel="noopener noreferrer">
+              Zenn ↗
+            </a>
+            <a href={site.qiita} target="_blank" rel="noopener noreferrer">
+              Qiita ↗
+            </a>
+            <a href={site.lapras} target="_blank" rel="noopener noreferrer">
+              LAPRAS ↗
+            </a>
+            <a href={site.x} target="_blank" rel="noopener noreferrer">
+              X ({site.xHandle}) ↗
+            </a>
           </div>
         </div>
       </div>

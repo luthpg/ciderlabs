@@ -1,6 +1,11 @@
 import type { APIRoute, GetStaticPaths } from 'astro';
 import { getArticleDocuments } from '../../../lib/articles.server';
-import { type ArticleDocument, formatDate } from '../../../lib/content';
+import {
+  type ArticleDocument,
+  cleanExcerpt,
+  formatDate,
+  normalizeTags,
+} from '../../../lib/content';
 import { ogPngResponse, renderOgImage } from '../../../lib/og.server';
 
 export const getStaticPaths = (() =>
@@ -22,8 +27,8 @@ export const GET: APIRoute<
     eyebrow: 'ARTICLE',
     meta: dateLabel,
     title: article.title,
-    description: article.description,
-    tags: article.tags,
+    description: cleanExcerpt(article.description, 120),
+    tags: normalizeTags(article.tags),
   });
 
   return ogPngResponse(png);

@@ -1,4 +1,8 @@
-let timer: ReturnType<typeof setTimeout>;
+let toastTimer: ReturnType<typeof setTimeout>;
+const buttonTimers = new WeakMap<
+  HTMLButtonElement,
+  ReturnType<typeof setTimeout>
+>();
 
 document.addEventListener('click', async (event) => {
   const button = (event.target as Element).closest<HTMLButtonElement>(
@@ -9,25 +13,54 @@ document.addEventListener('click', async (event) => {
 
   const value =
     button.dataset.copy ??
-    button.parentElement?.querySelector('pre code')?.textContent;
+    button
+      .closest('.code-block, .code-block-container')
+      ?.querySelector('pre code')?.textContent;
 
   if (!value) return;
 
   const status = document.querySelector<HTMLElement>('#copy-status');
-  if (!status) return;
+  const label = button.querySelector<HTMLElement>('.copy-label');
 
   try {
     await navigator.clipboard.writeText(value);
-    status.textContent = 'コピーしました';
+    if (status) {
+      status.textContent = 'クリップボードにコピーしました';
+    }
+    button.dataset.copied = 'true';
+    if (label) {
+      label.textContent = 'コピー済み';
+    } else if (button.hasAttribute('data-copy')) {
+      button.textContent = '✓ コピー済み';
+    }
+
+    const prevTimer = buttonTimers.get(button);
+    if (prevTimer !== undefined) {
+      clearTimeout(prevTimer);
+    }
+
+    const nextTimer = setTimeout(() => {
+      delete button.dataset.copied;
+      if (label) {
+        label.textContent = 'コピー';
+      } else if (button.hasAttribute('data-copy')) {
+        button.textContent = 'コピー';
+      }
+    }, 2000);
+    buttonTimers.set(button, nextTimer);
   } catch {
-    status.textContent =
-      'コピーできませんでした。テキストを選択してコピーしてください。';
+    if (status) {
+      status.textContent =
+        'コピーできませんでした。テキストを選択してコピーしてください。';
+    }
   }
 
-  clearTimeout(timer);
-  status.classList.add('visible');
+  if (status) {
+    clearTimeout(toastTimer);
+    status.classList.add('visible');
 
-  timer = setTimeout(() => {
-    status.classList.remove('visible');
-  }, 3000);
+    toastTimer = setTimeout(() => {
+      status.classList.remove('visible');
+    }, 2500);
+  }
 });
