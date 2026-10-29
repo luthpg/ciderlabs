@@ -49,10 +49,13 @@
 
 .article-page {
   display: grid;
+  grid-template-columns: minmax(0, 1fr);
   align-items: start;
   gap: 3rem;
   padding-top: 3rem;
   padding-bottom: 5rem;
+  min-width: 0;
+  max-width: 100%;
 }
 
 .article-body {
