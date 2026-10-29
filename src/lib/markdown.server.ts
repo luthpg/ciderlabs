@@ -265,6 +265,21 @@ export async function renderMarkdown(markdown: string) {
   $('a[target="_blank"]').attr('rel', 'noopener noreferrer');
   $('img').attr({ loading: 'lazy', decoding: 'async' });
 
+  $('table').each((_, element) => {
+    const table = $(element);
+    if (!table.parent().hasClass('table-scroll')) {
+      table.wrap('<div class="table-scroll"></div>');
+    }
+  });
+
+  $('table td').each((_, element) => {
+    const cell = $(element);
+    const textLength = Array.from(cell.text().trim()).length;
+    if (textLength > 45) {
+      cell.addClass('table-cell-long');
+    }
+  });
+
   $('span.zenn-embedded').each((_, element) => {
     const container = $(element);
     const iframe = container.find('iframe[data-content]').first();

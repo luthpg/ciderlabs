@@ -29,6 +29,7 @@
     scroll-behavior: smooth;
     scroll-padding-top: 7rem;
     color-scheme: light;
+    overflow-x: clip;
   }
   html[data-theme="dark"] {
     color-scheme: dark;
@@ -53,6 +54,9 @@
     @apply bg-surface font-sans text-body antialiased;
     line-height: 1.85;
     overflow-wrap: anywhere;
+    overflow-x: clip;
+    min-width: 0;
+    width: 100%;
   }
   h1,
   h2,
@@ -102,7 +106,7 @@
 @layer components {
   /* 共通 */
   .shell {
-    @apply mx-auto w-full max-w-7xl px-5 md:px-8 xl:px-12;
+    @apply mx-auto w-full max-w-7xl min-w-0 px-5 md:px-8 xl:px-12;
   }
   .section {
     @apply py-14 md:py-24;
@@ -238,7 +242,7 @@
     @apply overflow-hidden bg-mint;
   }
   .hero-grid {
-    @apply grid items-center gap-8 pb-10 pt-10 md:pb-14 md:pt-16 lg:grid-cols-2 lg:gap-12;
+    @apply grid grid-cols-1 min-w-0 max-w-full items-center gap-8 pb-10 pt-10 md:pb-14 md:pt-16 lg:grid-cols-2 lg:gap-12;
   }
   .hero h1 {
     font-size: clamp(2rem, 4.1vw, 3.5rem);
@@ -341,13 +345,13 @@
 
   /* 開発物 */
   .projects-grid {
-    @apply grid gap-6 lg:grid-cols-[1.65fr_1fr];
+    @apply grid grid-cols-1 min-w-0 max-w-full gap-6 lg:grid-cols-[minmax(0,1.65fr)_minmax(0,1fr)];
   }
   .side-projects {
-    @apply grid gap-6;
+    @apply grid grid-cols-1 min-w-0 max-w-full gap-6;
   }
   .project-card {
-    @apply flex flex-col overflow-hidden rounded-2xl border border-line bg-card transition-shadow hover:shadow-md;
+    @apply flex flex-col min-w-0 max-w-full overflow-hidden rounded-2xl border border-line bg-card transition-shadow hover:shadow-md;
   }
   .card-body {
     @apply flex flex-1 flex-col p-6 md:p-7;
@@ -595,7 +599,7 @@
     @apply text-xs text-muted;
   }
   .article-row {
-    @apply grid grid-cols-[1fr_auto] items-center gap-3 border-b border-line py-6 md:grid-cols-[100px_1fr_auto] md:gap-8;
+    @apply grid grid-cols-[minmax(0,1fr)_auto] items-center gap-3 border-b border-line py-6 md:grid-cols-[100px_minmax(0,1fr)_auto] md:gap-8;
   }
   .article-row time {
     @apply col-span-2 text-xs tabular-nums text-muted md:col-span-1;
@@ -615,10 +619,10 @@
 
   /* ライブラリ */
   .library-grid {
-    @apply grid gap-5 md:grid-cols-2;
+    @apply grid grid-cols-1 min-w-0 max-w-full gap-5 md:grid-cols-2;
   }
   .library-card {
-    @apply flex flex-col rounded-2xl border border-line bg-card p-6 md:p-7;
+    @apply flex flex-col min-w-0 max-w-full rounded-2xl border border-line bg-card p-6 md:p-7;
   }
   .package-icon {
     @apply grid size-10 place-items-center rounded-xl bg-mint text-2xl text-primary;
@@ -634,7 +638,7 @@
     @apply mb-6 flex-1 text-sm leading-relaxed;
   }
   .install {
-    @apply flex items-center justify-between gap-3 rounded-lg bg-mint px-3.5 py-2.5;
+    @apply flex min-w-0 max-w-full items-center justify-between gap-3 rounded-lg bg-mint px-3.5 py-2.5;
   }
   .install code {
     @apply min-w-0 flex-1 overflow-x-auto whitespace-nowrap text-[11px] text-primary sm:text-xs;
@@ -670,7 +674,7 @@
     @apply bg-mint-deep py-16 md:py-20;
   }
   .about-grid {
-    @apply grid gap-8 md:grid-cols-[1fr_1.4fr] md:gap-16;
+    @apply grid grid-cols-1 min-w-0 max-w-full gap-8 md:grid-cols-[minmax(0,1fr)_minmax(0,1.4fr)] md:gap-16;
   }
   .about-grid > div > p {
     @apply text-sm leading-loose;
@@ -759,7 +763,7 @@
 
   /* ドキュメント */
   .docs-layout {
-    @apply grid items-start gap-10 py-10 lg:grid-cols-[200px_minmax(0,1fr)] xl:grid-cols-[200px_minmax(0,1fr)_190px];
+    @apply grid grid-cols-1 min-w-0 max-w-full items-start gap-10 py-10 lg:grid-cols-[200px_minmax(0,1fr)] xl:grid-cols-[200px_minmax(0,1fr)_190px];
   }
   .docs-sidebar {
     @apply hidden lg:sticky lg:top-28 lg:block;
@@ -777,7 +781,7 @@
     @apply bg-mint font-bold text-primary;
   }
   .docs-article {
-    @apply min-w-0;
+    @apply min-w-0 max-w-full;
   }
   .docs-title {
     @apply mb-10 border-b border-line pb-8;
@@ -841,6 +845,8 @@
   font-family: var(--font-sans);
   color: var(--color-ink);
   line-height: 1.95;
+  min-width: 0;
+  max-width: 100%;
 }
 html[data-theme="dark"] .doc-content.znc {
   --c-bg-base: var(--color-card);
@@ -863,6 +869,64 @@ html[data-theme="dark"] .doc-content.znc {
 .doc-content.znc img {
   border-radius: 0.75rem;
 }
+.doc-content.znc .table-scroll {
+  display: block;
+  width: 100%;
+  max-width: 100%;
+  margin: 1.5rem 0;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  border: 1px solid var(--color-line);
+  border-radius: 0.75rem;
+  background: var(--color-card);
+}
+.doc-content.znc .table-scroll > table {
+  display: table;
+  width: max-content;
+  min-width: 100%;
+  margin: 0;
+  border-collapse: collapse;
+  overflow-wrap: normal;
+  word-break: normal;
+}
+.doc-content.znc table:not(.table-scroll > table) {
+  display: block;
+  width: 100%;
+  max-width: 100%;
+  margin: 1.5rem 0;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  border: 1px solid var(--color-line);
+  border-radius: 0.75rem;
+  border-collapse: collapse;
+  overflow-wrap: normal;
+  word-break: normal;
+  background: var(--color-card);
+}
+.doc-content.znc th,
+.doc-content.znc td {
+  padding: 0.65rem 0.95rem;
+  white-space: nowrap;
+  overflow-wrap: normal;
+  word-break: normal;
+  vertical-align: top;
+  border: 1px solid var(--color-line);
+  background: var(--color-card);
+}
+.doc-content.znc th {
+  font-weight: 700;
+  background: var(--color-mint);
+  color: var(--color-ink);
+}
+.doc-content.znc td.table-cell-long {
+  min-width: 16rem;
+  max-width: 26rem;
+  white-space: normal;
+}
+.doc-content.znc th code,
+.doc-content.znc td code {
+  white-space: nowrap;
+}
 .doc-content.znc span.zenn-embedded {
   display: block;
   margin: 1.5rem 0;
@@ -884,6 +948,8 @@ html[data-theme="dark"] .doc-content.znc {
 .doc-content.znc .code-block-container {
   position: relative;
   margin: 1.75rem 0;
+  min-width: 0;
+  max-width: 100%;
 }
 .doc-content.znc .code-block-filename-container {
   display: flex;
@@ -1004,12 +1070,20 @@ html[data-theme="dark"] .code-block {
   color: #c4b5fd;
 }
 .doc-content.znc .code-block pre {
+  display: block;
   margin: 0;
   padding-top: 2.75rem;
   border-radius: 0;
+  max-width: 100%;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
 }
 .doc-content.znc .code-block pre > code {
+  display: block;
+  width: max-content;
+  min-width: 100%;
   padding: 0 1.2rem 1.15rem;
+  box-sizing: border-box;
 }
 .copy-code {
   display: inline-flex;
