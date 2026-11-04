@@ -50,7 +50,8 @@ export default function ArticleList({
     <>
       {showFilters && (
         <div className="filters-bar">
-          <fieldset className="filters" aria-label="記事のカテゴリ">
+          {/* biome-ignore lint/a11y/useSemanticElements: 非フォーム要素のグループ化のため role="group" を使用 */}
+          <div role="group" className="filters" aria-label="記事のカテゴリ">
             {[null, ...displayedTags].map((tag) => (
               <button
                 key={tag ?? 'all'}
@@ -75,7 +76,7 @@ export default function ArticleList({
                     : `詳細なタグで絞り込む (+${hiddenSecondaryCount})`}
                 </button>
               )}
-          </fieldset>
+          </div>
 
           <div className="filters-meta">
             <p className="filters-status" role="status">

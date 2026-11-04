@@ -8,6 +8,7 @@ import Base from '../../layouts/Base.astro';
 import { getContent } from '../../lib/cms.server';
 import {
   docHref,
+  docsIndexHref,
   findRelatedArticles,
   formatDate,
   type Library,
@@ -33,13 +34,20 @@ interface Props {
 
 const { library } = Astro.props;
 const { projects, libraries, articles } = await getContent();
-const { html, headings, hasEmbeds } = await renderMarkdown(library.markdown);
+const { html, headings, hasEmbeds, hasMath } = await renderMarkdown(
+  library.markdown,
+);
 const copyMarkdown = sanitizeMarkdownForCopy(library.markdown, {
   title: library.name,
   description: library.description,
   command: library.command,
 });
-const otherLibraries = libraries.filter((item) => item.slug !== library.slug);
+const currentIndex = libraries.findIndex((item) => item.slug === library.slug);
+const prevLibrary = currentIndex > 0 ? libraries[currentIndex - 1] : undefined;
+const nextLibrary =
+  currentIndex >= 0 && currentIndex < libraries.length - 1
+    ? libraries[currentIndex + 1]
+    : undefined;
 const linkedProject = projects.find(
   (item) => item.librarySlug === library.slug,
 );
@@ -68,7 +76,7 @@ const relatedArticles = findRelatedArticles(articles, {
 
   <div class="shell docs-layout">
     <aside class="docs-sidebar">
-      <a class="back-link" href="/#libraries">← ライブラリ一覧</a>
+      <a class="back-link" href={docsIndexHref}>← ライブラリ一覧</a>
       <p class="eyebrow">DOCUMENTATION</p>
 
       <nav aria-label="ライブラリのドキュメント">
@@ -86,9 +94,28 @@ const relatedArticles = findRelatedArticles(articles, {
     </aside>
 
     <article class="docs-article">
-      <div class="mb-6 lg:hidden">
-        <a class="back-link" href="/#libraries">← ライブラリ一覧へ戻る</a>
+      <div class="mb-4 flex flex-wrap items-center gap-5 lg:hidden">
+        <a class="back-link" href={docsIndexHref}>← ライブラリ一覧</a>
+        <a class="back-link" href="/#libraries">トップページへ</a>
       </div>
+
+      {
+        libraries.length > 1 && (
+          <details class="mobile-toc mb-6 lg:hidden">
+            <summary>他の導入ガイド（全{libraries.length}件）</summary>
+            <nav aria-label="ライブラリのドキュメント（モバイル）">
+              {libraries.map(item => (
+                <a
+                  href={docHref(item.slug)}
+                  aria-current={item.slug === library.slug ? 'page' : undefined}
+                >
+                  {item.name}
+                </a>
+              ))}
+            </nav>
+          </details>
+        )
+      }
 
       <header class="docs-title">
         <p class="eyebrow">{library.category} / 導入ガイド</p>
@@ -212,14 +239,41 @@ const relatedArticles = findRelatedArticles(articles, {
             </a>
           </div>
 
-          {
-            otherLibraries.map(other => (
-              <a class="text-link" href={docHref(other.slug)}>
-                {other.name} の導入ガイドを読む →
-              </a>
-            ))
-          }
+          <a class="text-link" href={docsIndexHref}>
+            ← すべてのライブラリを見る（全{libraries.length}件）
+          </a>
         </div>
+
+        {
+          (prevLibrary || nextLibrary) && (
+            <nav
+              class="mt-8 grid gap-4 sm:grid-cols-2"
+              aria-label="前後の導入ガイド"
+            >
+              {prevLibrary ? (
+                <a class="related-article-card" href={docHref(prevLibrary.slug)}>
+                  <div>
+                    <small class="block text-xs text-muted">← 前のガイド</small>
+                    <strong>{prevLibrary.name}</strong>
+                  </div>
+                </a>
+              ) : (
+                <div class="hidden sm:block" />
+              )}
+              {nextLibrary && (
+                <a
+                  class="related-article-card sm:text-right"
+                  href={docHref(nextLibrary.slug)}
+                >
+                  <div class="sm:ml-auto">
+                    <small class="block text-xs text-muted">次のガイド →</small>
+                    <strong>{nextLibrary.name}</strong>
+                  </div>
+                </a>
+              )}
+            </nav>
+          )
+        }
       </footer>
     </article>
 
@@ -242,9 +296,13 @@ const relatedArticles = findRelatedArticles(articles, {
     </aside>
   </div>
 
-  <script>
-    if (document.querySelector('embed-katex')) {
-      import('zenn-embed-elements');
-    }
-  </script>
+  {
+    hasMath && (
+      <script>
+        if (document.querySelector('embed-katex')) {
+          import('zenn-embed-elements');
+        }
+      </script>
+    )
+  }
 </Base>

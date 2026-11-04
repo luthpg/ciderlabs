@@ -10,9 +10,56 @@ export type {
   SiteContent,
 } from './schema.server';
 
-import type { Article, Project } from './schema.server';
+import type { Article, Library, Project } from './schema.server';
 
+export const docsIndexHref = '/docs/';
 export const docHref = (slug: string) => `/docs/${slug}/`;
+
+const DRAFT_MARKDOWN_PATTERN = /(?:記載予定|準備中|執筆中|TODO|TBD|WIP)/i;
+
+export const getValidProjectMarkdown = (markdown?: string): string | null => {
+  const trimmed = markdown?.trim();
+  if (!trimmed) return null;
+  if (trimmed.length < 120 && DRAFT_MARKDOWN_PATTERN.test(trimmed)) {
+    return null;
+  }
+  return trimmed;
+};
+
+export const stripMarkdownToPlainText = (
+  markdown: string,
+  maxLength = 320,
+): string => {
+  const plain = markdown
+    .replace(/^\uFEFF/, '')
+    .replace(/^---\n[\s\S]*?\n---(?:\n|$)/, '')
+    .replace(/```[\s\S]*?```/g, ' ')
+    .replace(/~~~[\s\S]*?~~~/g, ' ')
+    .replace(/`([^`\n]+)`/g, '$1')
+    .replace(/!\[[^\]]*\]\([^)]*\)/g, ' ')
+    .replace(/\[([^\]]+)\]\([^)]*\)/g, '$1')
+    .replace(/^[#>\-*+|\s]+/gm, ' ')
+    .replace(/\s+/g, ' ')
+    .trim();
+
+  const chars = Array.from(plain);
+  return chars.length > maxLength
+    ? chars.slice(0, maxLength).join('')
+    : chars.join('');
+};
+
+export const buildLibrarySearchText = (library: Library): string => {
+  const base = `${library.description} ${library.category} ${library.slug} ${library.command} ${stripMarkdownToPlainText(library.markdown, 320)}`;
+  const lower = base.toLowerCase();
+  const aliases: string[] = [];
+  if (lower.includes('google apps script') && !/\bgas\b/i.test(base)) {
+    aliases.push('GAS');
+  }
+  if (/\bgas\b/i.test(base) && !lower.includes('google apps script')) {
+    aliases.push('Google Apps Script');
+  }
+  return aliases.length > 0 ? `${base} ${aliases.join(' ')}` : base;
+};
 
 export const projectSlug = (project: Project): string => {
   if (project.slug) return project.slug;
@@ -139,6 +186,7 @@ export const findRelatedArticles = (
   const targetTags = new Set(normalizeTags(target.tags ?? []));
 
   const scored = articles
+    .filter((article) => article.slug !== target.slug)
     .map((article) => {
       const haystack = normalize(
         `${article.slug} ${article.title} ${article.description}`,

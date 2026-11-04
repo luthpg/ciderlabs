@@ -10,6 +10,7 @@ import {
   docHref,
   findRelatedArticles,
   formatDate,
+  getValidProjectMarkdown,
   type Project,
   projectDetailHref,
   projectSlug,
@@ -35,13 +36,14 @@ interface Props {
 const { project } = Astro.props;
 const slug = projectSlug(project);
 const { projects, articles } = await getContent();
-const rendered = project.markdown
-  ? await renderMarkdown(project.markdown)
-  : null;
-const copyMarkdown = sanitizeMarkdownForCopy(project.markdown ?? '', {
-  title: project.name,
-  description: project.description,
-});
+const validMarkdown = getValidProjectMarkdown(project.markdown);
+const rendered = validMarkdown ? await renderMarkdown(validMarkdown) : null;
+const copyMarkdown = validMarkdown
+  ? sanitizeMarkdownForCopy(validMarkdown, {
+      title: project.name,
+      description: project.description,
+    })
+  : '';
 const relatedArticles = findRelatedArticles(articles, {
   slug,
   name: project.name,
@@ -85,9 +87,27 @@ const relatedArticles = findRelatedArticles(articles, {
     </aside>
 
     <article class="docs-article">
-      <div class="mb-6 lg:hidden">
+      <div class="mb-4 lg:hidden">
         <a class="back-link" href="/#projects">← つくったもの一覧へ戻る</a>
       </div>
+
+      {
+        projects.length > 1 && (
+          <details class="mobile-toc mb-6 lg:hidden">
+            <summary>他のつくったもの（全{projects.length}件）</summary>
+            <nav aria-label="つくったもの一覧（モバイル）">
+              {projects.map((item) => (
+                <a
+                  href={projectDetailHref(item)}
+                  aria-current={item.id === project.id ? 'page' : undefined}
+                >
+                  {item.name.split(/\s+[-—–]\s+/)[0]?.trim() || item.name}
+                </a>
+              ))}
+            </nav>
+          </details>
+        )
+      }
 
       <header class="docs-title">
         <p class="eyebrow">{project.category} / OVERVIEW</p>
@@ -139,7 +159,7 @@ const relatedArticles = findRelatedArticles(articles, {
               </a>
             )
           }
-          <CopyMarkdownButton markdown={copyMarkdown} />
+          {validMarkdown && <CopyMarkdownButton markdown={copyMarkdown} />}
         </div>
       </header>
 
@@ -166,8 +186,22 @@ const relatedArticles = findRelatedArticles(articles, {
       }
 
       {
-        rendered && (
+        rendered ? (
           <div class="znc doc-content mb-12" set:html={rendered.html} />
+        ) : (
+          <section class="project-section mb-12">
+            <h2>プロジェクト概要</h2>
+            <p class="whitespace-pre-line">{project.description}</p>
+            {project.librarySlug && (
+              <p class="mt-4">
+                インストール方法や詳しい使い方は{' '}
+                <a class="text-link" href={docHref(project.librarySlug)}>
+                  導入ガイド →
+                </a>{' '}
+                をご覧ください。
+              </p>
+            )}
+          </section>
         )
       }
 
@@ -212,9 +246,13 @@ const relatedArticles = findRelatedArticles(articles, {
     </aside>
   </div>
 
-  <script>
-    if (document.querySelector('embed-katex')) {
-      import('zenn-embed-elements');
-    }
-  </script>
+  {
+    rendered?.hasMath && (
+      <script>
+        if (document.querySelector('embed-katex')) {
+          import('zenn-embed-elements');
+        }
+      </script>
+    )
+  }
 </Base>

@@ -37,8 +37,8 @@
     --color-card: #191c22;
     --color-primary: #6bc49a;
     --color-primary-dark: #15181e;
-    --color-brand: #35654e;
-    --color-brand-hover: #427d61;
+    --color-brand: #2f7a57;
+    --color-brand-hover: #3b8f68;
     --color-secondary: #f28c56;
     --color-ink: #f1f3f5;
     --color-body: #c5cad3;
@@ -747,6 +747,9 @@
   .search-results a {
     @apply grid grid-cols-[1fr_auto] gap-x-4 rounded-lg px-3 py-3 hover:bg-mint;
   }
+  .search-results a[data-active="true"] {
+    @apply bg-mint;
+  }
   .search-results small {
     @apply col-span-2 text-[10px] text-primary;
   }
@@ -767,6 +770,11 @@
   }
   .docs-sidebar {
     @apply hidden lg:sticky lg:top-28 lg:block;
+    max-height: calc(100dvh - 8rem);
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    scrollbar-width: thin;
+    padding-right: 0.25rem;
   }
   .docs-sidebar .eyebrow {
     @apply mt-8;
@@ -776,6 +784,8 @@
   }
   .docs-sidebar nav a {
     @apply rounded-lg px-3 py-2 text-xs text-body hover:bg-mint hover:text-ink;
+    overflow-wrap: anywhere;
+    word-break: normal;
   }
   .docs-sidebar nav a[aria-current="page"] {
     @apply bg-mint font-bold text-primary;
@@ -794,10 +804,20 @@
   }
   .desktop-toc {
     @apply sticky top-28 hidden xl:block;
+    max-height: calc(100dvh - 8rem);
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    scrollbar-width: thin;
+    padding-right: 0.25rem;
   }
   .desktop-toc a,
   .mobile-toc a {
     @apply block py-1.5 text-xs text-body hover:text-primary;
+    overflow-wrap: anywhere;
+    word-break: normal;
+  }
+  .mobile-toc nav a[aria-current="page"] {
+    @apply rounded-lg bg-mint px-2.5 font-bold text-primary;
   }
   .desktop-toc [data-level="3"],
   .mobile-toc [data-level="3"] {
@@ -861,10 +881,17 @@ html[data-theme="dark"] .doc-content.znc {
 .doc-content.znc a:not(.header-anchor-link) {
   color: var(--color-primary);
 }
+.doc-content.znc h1,
 .doc-content.znc h2,
-.doc-content.znc h3 {
+.doc-content.znc h3,
+.doc-content.znc h4 {
   scroll-margin-top: 7rem;
   line-height: 1.6;
+  max-width: 100%;
+  overflow-x: auto;
+  overflow-wrap: anywhere;
+  word-break: normal;
+  scrollbar-width: thin;
 }
 .doc-content.znc img {
   border-radius: 0.75rem;

@@ -1,0 +1,52 @@
+---
+import LibraryList from '../../components/LibraryList';
+import { site } from '../../config/site';
+import Base from '../../layouts/Base.astro';
+import { getContent } from '../../lib/cms.server';
+
+const content = await getContent();
+---
+
+<Base
+  title={`ライブラリ・導入ガイド一覧 | ${site.name}`}
+  description="GAS・TypeScriptを中心に公開しているOSSパッケージと日本語の導入ガイド・リファレンス一覧。"
+>
+  <section class="section shell">
+    <a class="back-link" href="/#libraries">← トップへ戻る</a>
+
+    <div class="section-heading mt-6">
+      <div>
+        <p class="eyebrow">OPEN SOURCE & DOCUMENTATION</p>
+        <h1>開発が、<wbr />少し快適になる道具。</h1>
+      </div>
+
+      <div class="flex flex-wrap items-center gap-5">
+        <a
+          class="text-link"
+          href={site.github}
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          GitHub ↗
+        </a>
+        <a
+          class="text-link"
+          href="https://www.npmjs.com/~luth"
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          npm ↗
+        </a>
+      </div>
+    </div>
+
+    <p class="lead max-w-3xl">
+      Google Apps Script (GAS) と TypeScript のローカル開発・型推論・ルーティング・単体テスト・CI/CDを支えるOSSライブラリと、各パッケージの導入ガイド・APIリファレンスをまとめています。
+    </p>
+
+    <div class="mt-8">
+      <LibraryList libraries={content.libraries} client:load />
+    </div>
+  </section>
+</Base>
+

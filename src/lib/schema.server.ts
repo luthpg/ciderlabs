@@ -28,17 +28,51 @@ const tags = z
 
 const base = z.object({ id: text });
 
-export const librarySchema = base.extend({
-  slug,
-  name: text,
-  category: text,
-  description: text,
-  command: text,
-  repoUrl: url,
-  npmUrl: url,
-  markdown: text,
-  order: z.number().int(),
-});
+const deriveLibrarySlug = (name: string): string =>
+  name
+    .trim()
+    .replace(/^@[a-z0-9_-]+\//i, '')
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-|-$/g, '');
+
+const normalizeNpmUrl = (
+  rawUrl: string | undefined,
+  pkgName: string,
+): string => {
+  if (!rawUrl) {
+    return `https://www.npmjs.com/package/${pkgName.trim()}`;
+  }
+  return rawUrl.replace(
+    /^https:\/\/(?:www\.)?npmjs\.(?:org|com)\/package\//i,
+    'https://www.npmjs.com/package/',
+  );
+};
+
+export const librarySchema = base
+  .extend({
+    slug: optional(slug),
+    name: text,
+    category: text,
+    description: text,
+    command: optional(text),
+    repoUrl: optional(url),
+    npmUrl: optional(url),
+    markdown: text,
+    order: z.number().int(),
+  })
+  .transform((lib) => {
+    const resolvedSlug = slug.parse(lib.slug ?? deriveLibrarySlug(lib.name));
+    const trimmedName = lib.name.trim();
+    return {
+      ...lib,
+      slug: resolvedSlug,
+      name: trimmedName,
+      command: lib.command ?? `npm install ${trimmedName}`,
+      repoUrl: lib.repoUrl ?? `https://github.com/luthpg/${resolvedSlug}`,
+      npmUrl: url.parse(normalizeNpmUrl(lib.npmUrl, trimmedName)),
+    };
+  });
 
 export const projectVisualValues = [
   'poohma',

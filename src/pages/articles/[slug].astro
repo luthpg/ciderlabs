@@ -6,10 +6,11 @@ import CopyMarkdownButton from '../../components/CopyMarkdownButton.astro';
 import Reactions from '../../components/Reactions';
 import { site } from '../../config/site';
 import Base from '../../layouts/Base.astro';
-import { getArticleDocuments } from '../../lib/articles.server';
+import { getArticleDocuments, getArticles } from '../../lib/articles.server';
 import {
   type ArticleDocument,
   cleanExcerpt,
+  findRelatedArticles,
   formatDate,
   normalizeTags,
 } from '../../lib/content';
@@ -27,6 +28,11 @@ interface Props {
 const { article } = Astro.props;
 const displayTags = normalizeTags(article.tags);
 const displayDescription = cleanExcerpt(article.description, 140);
+const relatedArticles = findRelatedArticles(getArticles(), {
+  slug: article.slug,
+  name: article.title,
+  tags: article.tags,
+});
 ---
 
 <Base
@@ -109,6 +115,27 @@ const displayDescription = cleanExcerpt(article.description, 140);
 
       <div class="znc doc-content" set:html={article.html} />
 
+      {
+        relatedArticles.length > 0 && (
+          <section class="project-section mt-12">
+            <h2>関連する技術記事</h2>
+            <div class="mt-4 grid gap-3">
+              {relatedArticles.map(related => (
+                <a class="related-article-card" href={related.url}>
+                  <div>
+                    <time datetime={related.date}>
+                      {formatDate(related.date)}
+                    </time>
+                    <strong>{related.title}</strong>
+                  </div>
+                  <span aria-hidden="true">→</span>
+                </a>
+              ))}
+            </div>
+          </section>
+        )
+      }
+
       <footer class="article-end">
         <p>この記事へのリアクション・コメントは各掲載先へ。</p>
         <Reactions article={article} showFetchedAt />
@@ -136,9 +163,13 @@ const displayDescription = cleanExcerpt(article.description, 140);
     </aside>
   </div>
 
-  <script>
-    if (document.querySelector('embed-katex')) {
-      import('zenn-embed-elements');
-    }
-  </script>
+  {
+    article.hasMath && (
+      <script>
+        if (document.querySelector('embed-katex')) {
+          import('zenn-embed-elements');
+        }
+      </script>
+    )
+  }
 </Base>

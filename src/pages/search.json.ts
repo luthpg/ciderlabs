@@ -2,6 +2,7 @@ import type { APIRoute } from 'astro';
 
 import { getContent } from '../lib/cms.server';
 import {
+  buildLibrarySearchText,
   cleanExcerpt,
   docHref,
   normalizeTags,
@@ -19,17 +20,17 @@ export const GET: APIRoute = async () => {
       kind: 'つくったもの',
       keywords: `${project.description} ${project.category} ${project.tags.join(' ')}`,
     })),
+    ...libraries.map((library) => ({
+      title: library.name,
+      href: docHref(library.slug),
+      kind: 'ドキュメント',
+      keywords: buildLibrarySearchText(library),
+    })),
     ...articles.map((article) => ({
       title: article.title,
       href: article.url,
       kind: '技術記事',
       keywords: `${cleanExcerpt(article.description, Number.POSITIVE_INFINITY)} ${normalizeTags(article.tags).join(' ')}`,
-    })),
-    ...libraries.map((library) => ({
-      title: library.name,
-      href: docHref(library.slug),
-      kind: 'ドキュメント',
-      keywords: `${library.description} ${library.category}`,
     })),
   ];
 

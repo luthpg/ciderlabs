@@ -8,7 +8,7 @@ import { defineConfig } from 'astro/config';
 // https://astro.build/config
 export default defineConfig({
   integrations: [react(), sitemap()],
-  site: 'https://www.ciderlabs.link',
+  site: 'https://ciderlabs.link',
   output: 'static',
   trailingSlash: 'always',
   vite: {

@@ -4,8 +4,8 @@ import { Resvg } from '@resvg/resvg-js';
 import satori, { type Font } from 'satori';
 import { site } from '../config/site';
 
-export const OG_WIDTH = 1280;
-export const OG_HEIGHT = 720;
+export const OG_WIDTH = 1200;
+export const OG_HEIGHT = 630;
 
 export interface OgSlideProps {
   eyebrow: string;
@@ -106,8 +106,8 @@ export async function renderOgImage({
   const element = (
     <div
       style={{
-        width: '1280px',
-        height: '720px',
+        width: '1200px',
+        height: '630px',
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
@@ -124,8 +124,8 @@ export async function renderOgImage({
           position: 'absolute',
           right: '-60px',
           top: '-60px',
-          width: '380px',
-          height: '380px',
+          width: '360px',
+          height: '360px',
           borderRadius: '999px',
           backgroundColor: '#dbeade',
           opacity: 0.7,
@@ -136,8 +136,8 @@ export async function renderOgImage({
           position: 'absolute',
           right: '24px',
           top: '16px',
-          width: '160px',
-          height: '160px',
+          width: '148px',
+          height: '148px',
           borderRadius: '999px',
           backgroundColor: '#f28c56',
         }}
@@ -147,8 +147,8 @@ export async function renderOgImage({
           position: 'absolute',
           left: '-40px',
           bottom: '-40px',
-          width: '240px',
-          height: '240px',
+          width: '220px',
+          height: '220px',
           borderRadius: '999px',
           backgroundColor: '#fff1e7',
         }}
@@ -158,15 +158,15 @@ export async function renderOgImage({
       <div
         style={{
           position: 'relative',
-          width: '1160px',
-          height: '600px',
+          width: '1096px',
+          height: '526px',
           display: 'flex',
           flexDirection: 'column',
           justifyContent: 'space-between',
           backgroundColor: '#ffffff',
           border: '2px solid #dce5de',
           borderRadius: '28px',
-          padding: '44px 56px',
+          padding: '38px 48px',
           boxShadow: '0 20px 50px rgba(29, 52, 41, 0.08)',
         }}
       >
