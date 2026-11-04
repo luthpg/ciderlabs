@@ -43,8 +43,8 @@ const ogImageUrl = new URL(ogImage, Astro.site);
     <meta property="og:description" content={description} />
     <meta property="og:url" content={canonical} />
     <meta property="og:image" content={ogImageUrl} />
-    <meta property="og:image:width" content="1280" />
-    <meta property="og:image:height" content="720" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
     <meta name="twitter:card" content="summary_large_image" />
     <meta name="twitter:site" content={site.xHandle} />
     <meta name="twitter:creator" content={site.xHandle} />
@@ -163,6 +163,7 @@ const ogImageUrl = new URL(ogImage, Astro.site);
         </div>
 
         <nav aria-label="サイトリンク">
+          <a href="/docs/">ライブラリ一覧</a>
           <a href="/articles/">技術記事一覧</a>
           <a href={site.github} target="_blank" rel="noopener noreferrer">
             GitHub ↗
@@ -196,6 +197,8 @@ const ogImageUrl = new URL(ogImage, Astro.site);
       import '../scripts/copy';
       import '../scripts/theme';
 
+      const mobileMenu = document.querySelector<HTMLDetailsElement>('.mobile-menu');
+
       document
         .querySelectorAll<HTMLAnchorElement>('.mobile-menu a')
         .forEach(link => {
@@ -203,6 +206,21 @@ const ogImageUrl = new URL(ogImage, Astro.site);
             link.closest('details')?.removeAttribute('open');
           });
         });
+
+      document.addEventListener('click', event => {
+        if (!mobileMenu?.open) return;
+        const target = event.target as Node | null;
+        if (target && !mobileMenu.contains(target)) {
+          mobileMenu.removeAttribute('open');
+        }
+      });
+
+      document.addEventListener('keydown', event => {
+        if (event.key === 'Escape' && mobileMenu?.open) {
+          mobileMenu.removeAttribute('open');
+          mobileMenu.querySelector<HTMLElement>('summary')?.focus();
+        }
+      });
     </script>
   </body>
 </html>

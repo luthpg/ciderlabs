@@ -4,8 +4,9 @@
       "fieldId": "slug",
       "name": "URLのslug",
       "kind": "text",
-      "required": true,
+      "required": false,
       "isUnique": true,
+      "description": "未設定時はパッケージ名から自動生成",
       "patternMatchValidation": {
         "regexp": {
           "pattern": "^[a-z0-9]+(-[a-z0-9]+)*$"
@@ -34,13 +35,15 @@
       "fieldId": "command",
       "name": "インストールコマンド",
       "kind": "text",
-      "required": true
+      "required": false,
+      "description": "未設定時は npm install <パッケージ名> を自動生成"
     },
     {
       "fieldId": "repoUrl",
       "name": "GitHub URL",
       "kind": "text",
-      "required": true,
+      "required": false,
+      "description": "未設定時は https://github.com/luthpg/<slug> を自動生成",
       "patternMatchValidation": {
         "regexp": {
           "pattern": "^https://"
@@ -51,7 +54,8 @@
       "fieldId": "npmUrl",
       "name": "npm URL",
       "kind": "text",
-      "required": true,
+      "required": false,
+      "description": "未設定時は https://www.npmjs.com/package/<パッケージ名> を自動生成",
       "patternMatchValidation": {
         "regexp": {
           "pattern": "^https://"

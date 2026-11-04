@@ -24,7 +24,9 @@ export default function Reactions({
   if (!sources.length) return null;
 
   return (
-    <fieldset
+    // biome-ignore lint/a11y/useSemanticElements: リンク群（非フォーム要素）のグループ化のため role="group" を使用
+    <div
+      role="group"
       className="platform-reactions"
       aria-label="外部サービスのリアクション"
     >
@@ -61,6 +63,6 @@ export default function Reactions({
           </div>
         );
       })}
-    </fieldset>
+    </div>
   );
 }

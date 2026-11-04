@@ -1,6 +1,7 @@
 import { site } from '../config/site';
 import {
   docHref,
+  docsIndexHref,
   type Library,
   type Project,
   projectDetailHref,
@@ -36,6 +37,9 @@ export function Hero({
             </a>
             <a className="button outline" href="#writing">
               技術記事を読む <span aria-hidden="true">↓</span>
+            </a>
+            <a className="button outline" href={docsIndexHref}>
+              ライブラリ・導入ガイド <span aria-hidden="true">→</span>
             </a>
           </div>
 
@@ -128,7 +132,12 @@ export function getProjectMeta(project: Project) {
     }
   }
 
-  const tags = project.tags.length > 0 ? project.tags : [project.category];
+  const tags =
+    project.tags.length > 0
+      ? project.tags
+      : project.librarySlug
+        ? ['GAS', 'TypeScript', 'CLI']
+        : ['Web', 'TypeScript'];
 
   return {
     shortName,
@@ -302,7 +311,11 @@ export function ProjectVisual({
   }
 
   if (visual === 'automation') {
-    const steps = [tags[0] ?? 'Trigger', shortName, tags[1] ?? 'Complete'];
+    const steps = [
+      project.tags[0] ?? 'CLI',
+      shortName,
+      project.tags[1] ?? 'Ready',
+    ];
     return (
       <div
         className={`project-visual ${sizeClass} type-visual`}
@@ -504,6 +517,9 @@ export function Projects({ projects }: { projects: Project[] }) {
 }
 
 export function Libraries({ libraries }: { libraries: Library[] }) {
+  const featuredLibraries = libraries.slice(0, 4);
+  const bannerLibraries = libraries.slice(0, 2);
+
   return (
     <section id="libraries" className="section shell">
       <div className="section-heading">
@@ -515,11 +531,16 @@ export function Libraries({ libraries }: { libraries: Library[] }) {
             少し快適になる道具。
           </h2>
         </div>
-        <p>自分のためにつくったものを、誰かにも使えるかたちで。</p>
+        <div className="flex flex-wrap items-center gap-5">
+          <p>自分のためにつくったものを、誰かにも使えるかたちで。</p>
+          <a className="text-link" href={docsIndexHref}>
+            ライブラリ一覧（全{libraries.length}件） →
+          </a>
+        </div>
       </div>
 
       <div className="library-grid">
-        {libraries.map((library) => (
+        {featuredLibraries.map((library) => (
           <article className="library-card" key={library.id}>
             <div className="flex items-center justify-between gap-4">
               <span className="package-icon" aria-hidden="true">
@@ -591,6 +612,15 @@ export function Libraries({ libraries }: { libraries: Library[] }) {
         ))}
       </div>
 
+      {libraries.length > featuredLibraries.length && (
+        <div className="mt-8 flex flex-wrap items-center justify-between gap-4">
+          <a className="button outline" href={docsIndexHref}>
+            すべてのライブラリを見る（全{libraries.length}件）{' '}
+            <span aria-hidden="true">→</span>
+          </a>
+        </div>
+      )}
+
       {libraries.length > 0 && (
         <div className="docs-banner">
           <div>
@@ -605,10 +635,14 @@ export function Libraries({ libraries }: { libraries: Library[] }) {
             </p>
           </div>
           <div className="flex flex-wrap gap-3">
-            {libraries.map((library, index) => (
+            <a className="button primary" href={docsIndexHref}>
+              すべての導入ガイドを見る（全{libraries.length}件）{' '}
+              <span aria-hidden="true">→</span>
+            </a>
+            {bannerLibraries.map((library) => (
               <a
                 key={library.id}
-                className={`button ${index === 0 ? 'primary' : 'outline'}`}
+                className="button outline"
                 href={docHref(library.slug)}
               >
                 {library.name} の導入ガイド <span aria-hidden="true">→</span>
@@ -652,13 +686,24 @@ export function About({
                 <dt>開発者向けOSS・ライブラリの提供</dt>
                 <dd>
                   日々の開発体験を改善するツールやライブラリを設計し、
-                  {libraries.map((lib, index) => (
+                  {libraries.slice(0, 3).map((lib, index) => (
                     <span key={lib.id}>
                       {index > 0 && '・'}
                       <a href={docHref(lib.slug)}>{lib.name}</a>
                     </span>
-                  ))}{' '}
-                  として公開しています。
+                  ))}
+                  {libraries.length > 3 ? (
+                    <>
+                      {' '}
+                      ほか
+                      <a href={docsIndexHref}>
+                        全{libraries.length}件のOSSライブラリ
+                      </a>
+                    </>
+                  ) : (
+                    ' として公開しています。'
+                  )}
+                  {libraries.length > 3 && 'を公開しています。'}
                 </dd>
               </div>
             )}

@@ -1,5 +1,32 @@
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { normalize, type SearchItem } from '../lib/content';
+
+function scoreSearchItem(item: SearchItem, words: string[]): number {
+  const normTitle = normalize(item.title);
+  const normKeywords = normalize(item.keywords);
+  const haystack = `${normTitle} ${normKeywords}`;
+
+  if (!words.every((word) => haystack.includes(word))) {
+    return -1;
+  }
+
+  let score = 0;
+  for (const word of words) {
+    if (normTitle === word || normTitle.startsWith(word)) {
+      score += 100;
+    } else if (normTitle.includes(word)) {
+      score += 60;
+    } else if (normKeywords.includes(word)) {
+      score += 15;
+    }
+  }
+
+  if (item.kind === 'ドキュメント' || item.kind === 'つくったもの') {
+    score += 20;
+  }
+
+  return score;
+}
 
 export default function Search() {
   const dialog = useRef<HTMLDialogElement>(null);
@@ -12,6 +39,7 @@ export default function Search() {
     'idle',
   );
   const [query, setQuery] = useState('');
+  const [activeIndex, setActiveIndex] = useState(0);
 
   const load = useCallback(async () => {
     setStatus('loading');
@@ -52,15 +80,54 @@ export default function Search() {
     return () => window.removeEventListener('keydown', onKey);
   }, [open]);
 
-  const words = normalize(query).trim().split(/\s+/).filter(Boolean);
+  const words = useMemo(
+    () => normalize(query).trim().split(/\s+/).filter(Boolean),
+    [query],
+  );
 
-  const matches = items
-    .filter((item) =>
-      words.every((word) =>
-        normalize(`${item.title} ${item.keywords}`).includes(word),
-      ),
-    )
-    .slice(0, 12);
+  const matches = useMemo(() => {
+    if (words.length === 0) {
+      const projects = items
+        .filter((item) => item.kind === 'つくったもの')
+        .slice(0, 3);
+      const docs = items
+        .filter((item) => item.kind === 'ドキュメント')
+        .slice(0, 4);
+      const articles = items
+        .filter((item) => item.kind === '技術記事')
+        .slice(0, 3);
+      return [...projects, ...docs, ...articles];
+    }
+
+    return items
+      .map((item) => ({ item, score: scoreSearchItem(item, words) }))
+      .filter(({ score }) => score >= 0)
+      .sort((a, b) => b.score - a.score)
+      .slice(0, 20)
+      .map(({ item }) => item);
+  }, [items, words]);
+
+  const safeActiveIndex =
+    matches.length === 0 ? -1 : activeIndex >= matches.length ? 0 : activeIndex;
+
+  const onInputKeyDown = (event: React.KeyboardEvent<HTMLInputElement>) => {
+    if (matches.length === 0) return;
+
+    if (event.key === 'ArrowDown') {
+      event.preventDefault();
+      setActiveIndex((prev) => (prev + 1) % matches.length);
+    } else if (event.key === 'ArrowUp') {
+      event.preventDefault();
+      setActiveIndex((prev) => (prev - 1 + matches.length) % matches.length);
+    } else if (event.key === 'Enter' && safeActiveIndex >= 0) {
+      const target = matches[safeActiveIndex];
+      if (target) {
+        event.preventDefault();
+        dialog.current?.close();
+        window.location.assign(target.href);
+      }
+    }
+  };
 
   const onTitleClick = (e: React.MouseEvent | React.KeyboardEvent) => {
     if (e.target !== e.currentTarget) return;
@@ -117,8 +184,12 @@ export default function Search() {
           id="site-search"
           type="search"
           value={query}
-          onChange={(event) => setQuery(event.target.value)}
-          placeholder="記事、ライブラリ、つくったもの"
+          onChange={(event) => {
+            setQuery(event.target.value);
+            setActiveIndex(0);
+          }}
+          onKeyDown={onInputKeyDown}
+          placeholder="記事、ライブラリ、つくったもの（↑↓で移動・Enterで開く）"
           autoComplete="off"
         />
 
@@ -140,13 +211,20 @@ export default function Search() {
         {status === 'ready' && (
           <>
             <p className="search-caption" role="status">
-              {query ? `${matches.length}件の候補` : '記事とドキュメント'}
+              {query.trim()
+                ? `${matches.length}件の候補`
+                : 'つくったもの・導入ガイド・技術記事'}
             </p>
 
             <ul className="search-results">
-              {matches.map((item) => (
+              {matches.map((item, index) => (
                 <li key={item.kind + item.href}>
-                  <a href={item.href} onClick={() => dialog.current?.close()}>
+                  <a
+                    href={item.href}
+                    data-active={index === safeActiveIndex ? 'true' : undefined}
+                    onMouseEnter={() => setActiveIndex(index)}
+                    onClick={() => dialog.current?.close()}
+                  >
                     <small>{item.kind}</small>
                     <strong>{item.title}</strong>
                     <span aria-hidden="true">→</span>
