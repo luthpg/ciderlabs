@@ -17,11 +17,13 @@ export const docHref = (slug: string) => `/docs/${slug}/`;
 
 const DRAFT_MARKDOWN_PATTERN = /(?:記載予定|準備中|執筆中|TODO|TBD|WIP)/i;
 
-export const getValidProjectMarkdown = (markdown?: string): string | null => {
+export const getValidProjectMarkdown = (
+  markdown?: string,
+): string | undefined => {
   const trimmed = markdown?.trim();
-  if (!trimmed) return null;
+  if (!trimmed) return undefined;
   if (trimmed.length < 120 && DRAFT_MARKDOWN_PATTERN.test(trimmed)) {
-    return null;
+    return undefined;
   }
   return trimmed;
 };
