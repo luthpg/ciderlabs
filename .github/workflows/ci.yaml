@@ -46,6 +46,11 @@ jobs:
           key: reactions-v1-${{ github.run_id }}-${{ github.run_attempt }}
           restore-keys: reactions-v1-
 
+      - run: pnpm run check:cms
+        env:
+          MICROCMS_SERVICE_DOMAIN: ${{ secrets.MICROCMS_SERVICE_DOMAIN }}
+          MICROCMS_API_KEY: ${{ secrets.MICROCMS_API_KEY }}
+
       - run: pnpm run build
         env:
           MICROCMS_SERVICE_DOMAIN: ${{ secrets.MICROCMS_SERVICE_DOMAIN }}

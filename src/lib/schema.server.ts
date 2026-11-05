@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import type { Libraries, Projects } from '../microcms-types';
 
 const text = z.string().trim().min(1);
 const slug = z.string().regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/);
@@ -7,19 +8,24 @@ const date = z.iso.datetime({ offset: true });
 const count = z.number().int().nonnegative();
 const user = z.string().regex(/^[a-zA-Z0-9_-]+$/);
 
-const optional = <T extends z.ZodType>(schema: T) =>
-  z.preprocess(
-    (value) => (value === '' || value === null ? undefined : value),
-    schema.optional(),
-  );
+const optional = <T extends z.ZodType<string, string>>(schema: T) =>
+  z
+    .string()
+    .nullable()
+    .optional()
+    .transform((value) => {
+      const trimmed = value?.trim();
+      return trimmed ? trimmed : undefined;
+    })
+    .pipe(schema.optional());
 
 const tags = z
   .string()
+  .nullable()
   .optional()
-  .default('')
   .transform((value) => [
     ...new Set(
-      value
+      (value ?? '')
         .split(',')
         .map((tag) => tag.trim())
         .filter(Boolean),
@@ -74,6 +80,8 @@ export const librarySchema = base
     };
   });
 
+type MicroCMSProjectVisual = Projects['visual'][number];
+
 export const projectVisualValues = [
   'poohma',
   'webapp',
@@ -87,7 +95,16 @@ export const projectVisualValues = [
   'automation',
   'extension',
   'security',
-] as const;
+] as const satisfies readonly MicroCMSProjectVisual[];
+
+type _AssertVisualExhaustive =
+  Exclude<
+    MicroCMSProjectVisual,
+    (typeof projectVisualValues)[number]
+  > extends never
+    ? true
+    : never;
+const _visualExhaustive: _AssertVisualExhaustive = true;
 
 const projectVisual = z.enum(projectVisualValues);
 
@@ -99,7 +116,10 @@ export const projectSchema = base
     description: text,
     visual: z.union([
       projectVisual,
-      z.tuple([projectVisual]).transform(([value]) => value),
+      z
+        .array(projectVisual)
+        .min(1)
+        .transform(([value]) => value),
     ]),
     featured: z.boolean().default(false),
     tags,
@@ -112,6 +132,18 @@ export const projectSchema = base
   .refine((project) => Boolean(project.url || project.librarySlug), {
     message: 'url または librarySlug が必要です',
   });
+
+type _AssertSchemaCompat<
+  Raw extends z.input<Schema>,
+  Schema extends z.ZodType,
+> = Exclude<keyof z.input<Schema>, keyof Raw> extends never ? Schema : never;
+
+const _projectSchemaCheck: _AssertSchemaCompat<Projects, typeof projectSchema> =
+  projectSchema;
+const _librarySchemaCheck: _AssertSchemaCompat<
+  Libraries,
+  typeof librarySchema
+> = librarySchema;
 
 export const sourceIndexSchema = z.array(
   z
