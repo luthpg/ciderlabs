@@ -1,0 +1,30 @@
+{
+  "name": "ciderlabs",
+  "short_name": "ciderlabs",
+  "description": "luthのポートフォリオサイト。GAS・TypeScriptのOSS開発、個人開発のWebアプリ、技術記事と導入ドキュメントをまとめています。",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "portrait-primary",
+  "background_color": "#ffffff",
+  "theme_color": "#35654e",
+  "lang": "ja",
+  "icons": [
+    {
+      "src": "/icons/icon-192x192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "/icons/icon-512x512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    },
+    {
+      "src": "/icons/icon-maskable-512x512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ]
+}

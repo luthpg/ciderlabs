@@ -35,6 +35,12 @@ const ogImageUrl = new URL(ogImage, Astro.site);
     <title>{title}</title>
     <link rel="canonical" href={canonical} />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="apple-touch-icon" href="/icons/apple-touch-icon.png" />
+    <link rel="manifest" href="/manifest.webmanifest" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+    <meta name="apple-mobile-web-app-title" content="ciderlabs" />
 
     <meta property="og:type" content={type} />
     <meta property="og:locale" content="ja_JP" />
@@ -196,6 +202,13 @@ const ogImageUrl = new URL(ogImage, Astro.site);
     <script>
       import '../scripts/copy';
       import '../scripts/theme';
+      import '../scripts/share';
+
+      if ('serviceWorker' in navigator && !import.meta.env.DEV) {
+        window.addEventListener('load', () => {
+          navigator.serviceWorker.register('/sw.js').catch(() => {});
+        });
+      }
 
       const mobileMenu = document.querySelector<HTMLDetailsElement>('.mobile-menu');
 

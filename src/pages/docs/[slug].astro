@@ -3,6 +3,7 @@ import type { GetStaticPaths } from 'astro';
 import 'zenn-content-css/lib/index.css';
 
 import CopyMarkdownButton from '../../components/CopyMarkdownButton.astro';
+import ShareButton from '../../components/ShareButton.astro';
 import { site } from '../../config/site';
 import Base from '../../layouts/Base.astro';
 import { getContent } from '../../lib/cms.server';
@@ -136,6 +137,10 @@ const relatedArticles = findRelatedArticles(articles, {
           <a href={library.npmUrl} target="_blank" rel="noopener noreferrer">
             npm ↗
           </a>
+          <ShareButton
+            title={`${library.name} の導入ガイド`}
+            text={library.description}
+          />
           <CopyMarkdownButton markdown={copyMarkdown} />
         </div>
 
@@ -237,6 +242,10 @@ const relatedArticles = findRelatedArticles(articles, {
             >
               npm パッケージを見る <span aria-hidden="true">↗</span>
             </a>
+            <ShareButton
+              title={`${library.name} の導入ガイド`}
+              text={library.description}
+            />
           </div>
 
           <a class="text-link" href={docsIndexHref}>
