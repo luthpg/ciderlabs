@@ -1,23 +1,9 @@
-let shareToastTimer: ReturnType<typeof setTimeout> | undefined;
+import { showToast } from './toast';
+
 const shareButtonTimers = new WeakMap<
   HTMLButtonElement,
   ReturnType<typeof setTimeout>
 >();
-
-function showToast(message: string) {
-  const status = document.querySelector<HTMLElement>('#copy-status');
-  if (status == null) return;
-
-  status.textContent = message;
-  if (shareToastTimer !== undefined) {
-    clearTimeout(shareToastTimer);
-  }
-  status.classList.add('visible');
-
-  shareToastTimer = setTimeout(() => {
-    status.classList.remove('visible');
-  }, 2500);
-}
 
 async function copyUrlFallback(url: string, button: HTMLButtonElement) {
   const label = button.querySelector<HTMLElement>('.share-label');
@@ -52,9 +38,13 @@ async function copyUrlFallback(url: string, button: HTMLButtonElement) {
 }
 
 document.addEventListener('click', async (event) => {
-  const button = (event.target as Element).closest<HTMLButtonElement>(
-    '[data-share]',
-  );
+  const target =
+    event.target instanceof Element
+      ? event.target
+      : event.target instanceof Text
+        ? event.target.parentElement
+        : null;
+  const button = target?.closest<HTMLButtonElement>('[data-share]');
   if (button == null) return;
 
   const url = button.dataset.shareUrl || window.location.href;
@@ -84,5 +74,3 @@ document.addEventListener('click', async (event) => {
     await copyUrlFallback(url, button);
   }
 });
-
-export {};

@@ -43,45 +43,43 @@ self.addEventListener('fetch', (event) => {
   // 同一オリジンのみキャッシュ対象
   if (url.origin !== self.location.origin) return;
 
+  // キャッシュの書き込み失敗でネットワーク応答を失わないようにする
+  const updateCache = async (response) => {
+    if (response.ok) {
+      const clone = response.clone();
+      const cache = await caches.open(CACHE_NAME);
+      await cache.put(request, clone);
+    }
+  };
+  const reportCacheError = (error) => {
+    console.warn('Cache update failed', error);
+  };
+
   // HTML ナビゲーションリクエスト: Network-First（最新のHTMLを優先取得、オフライン時はキャッシュ）
   if (request.mode === 'navigate') {
+    const networkPromise = fetch(request);
+    event.waitUntil(networkPromise.then(updateCache).catch(reportCacheError));
     event.respondWith(
-      fetch(request)
-        .then((response) => {
-          if (response.ok) {
-            const clone = response.clone();
-            caches.open(CACHE_NAME).then((cache) => cache.put(request, clone));
-          }
-          return response;
-        })
-        .catch(async () => {
-          const cached = await caches.match(request);
-          if (cached) return cached;
-          const fallback = await caches.match('/');
-          if (fallback) return fallback;
-          return new Response('Offline', {
-            status: 503,
-            headers: { 'Content-Type': 'text/plain' },
-          });
-        }),
+      networkPromise.catch(async () => {
+        const cached = await caches.match(request);
+        if (cached) return cached;
+        return new Response('Offline', {
+          status: 503,
+          headers: { 'Content-Type': 'text/plain' },
+        });
+      }),
     );
     return;
   }
 
   // 静的アセット (画像、CSS、JS、フォント等): Stale-While-Revalidate
+  const cachedPromise = caches.match(request);
+  const fetchPromise = cachedPromise.then(() => fetch(request));
+  event.waitUntil(fetchPromise.then(updateCache).catch(reportCacheError));
   event.respondWith(
-    caches.match(request).then((cachedResponse) => {
-      const fetchPromise = fetch(request)
-        .then((networkResponse) => {
-          if (networkResponse.ok) {
-            const clone = networkResponse.clone();
-            caches.open(CACHE_NAME).then((cache) => cache.put(request, clone));
-          }
-          return networkResponse;
-        })
-        .catch(() => cachedResponse);
-
-      return cachedResponse || fetchPromise;
-    }),
+    cachedPromise.then(
+      (cachedResponse) =>
+        cachedResponse || fetchPromise.catch(() => cachedResponse),
+    ),
   );
 });
