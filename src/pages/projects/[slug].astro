@@ -2,6 +2,7 @@
 import type { GetStaticPaths } from 'astro';
 import 'zenn-content-css/lib/index.css';
 import CopyMarkdownButton from '../../components/CopyMarkdownButton.astro';
+import ShareButton from '../../components/ShareButton.astro';
 import { ProjectVisual } from '../../components/HomeSections';
 import { site } from '../../config/site';
 import Base from '../../layouts/Base.astro';
@@ -159,6 +160,7 @@ const relatedArticles = findRelatedArticles(articles, {
               </a>
             )
           }
+          <ShareButton title={project.name} text={project.description} />
           {validMarkdown && <CopyMarkdownButton markdown={copyMarkdown} />}
         </div>
       </header>

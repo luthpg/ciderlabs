@@ -462,17 +462,34 @@ function ProjectCard({
         </div>
 
         <div className="card-links">
-          <a href={detailUrl}>詳細を見る →</a>
+          <a href={detailUrl} className="card-action-primary">
+            詳細を見る →
+          </a>
           {project.librarySlug && (
-            <a href={docHref(project.librarySlug)}>導入ガイド →</a>
+            <a
+              href={docHref(project.librarySlug)}
+              className="card-action-secondary"
+            >
+              導入ガイド →
+            </a>
           )}
           {project.url && (
-            <a href={project.url} target="_blank" rel="noopener noreferrer">
+            <a
+              href={project.url}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="card-action-secondary"
+            >
               サイトを見る ↗
             </a>
           )}
           {project.repoUrl && (
-            <a href={project.repoUrl} target="_blank" rel="noopener noreferrer">
+            <a
+              href={project.repoUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="card-action-secondary"
+            >
               GitHub ↗
             </a>
           )}

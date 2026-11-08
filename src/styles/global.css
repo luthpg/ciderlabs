@@ -53,7 +53,7 @@
   body {
     @apply bg-surface font-sans text-body antialiased;
     line-height: 1.85;
-    overflow-wrap: anywhere;
+    overflow-wrap: break-word;
     overflow-x: clip;
     min-width: 0;
     width: 100%;
@@ -144,6 +144,21 @@
   .card-links a:hover,
   .back-link:hover {
     @apply underline underline-offset-4;
+  }
+  .card-action-primary {
+    @apply inline-flex items-center gap-1.5 rounded-lg bg-brand px-3.5 py-1.5 text-xs font-bold text-white shadow-xs transition-colors hover:bg-brand-hover hover:no-underline;
+  }
+  .card-action-secondary {
+    @apply inline-flex items-center gap-1 py-1 text-xs font-medium text-muted transition-colors hover:text-primary hover:underline hover:underline-offset-4;
+  }
+  .share-btn {
+    @apply inline-flex items-center gap-1.5 rounded-lg border border-line bg-card/80 px-3 py-1.5 text-xs font-medium text-body transition-colors hover:border-primary/40 hover:bg-mint hover:text-primary;
+  }
+  .share-btn[data-shared="true"] {
+    @apply border-emerald-500/50 bg-emerald-50 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-400;
+  }
+  .share-icon {
+    @apply h-3.5 w-3.5 shrink-0;
   }
   .section-heading {
     @apply mb-8 flex flex-wrap items-end justify-between gap-5;
@@ -572,10 +587,15 @@
     @apply mb-6 border-b border-line pb-5;
   }
   .filters {
-    @apply flex flex-wrap items-center gap-2;
+    @apply flex items-center gap-2 overflow-x-auto pb-2 sm:flex-wrap sm:pb-0;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+  }
+  .filters::-webkit-scrollbar {
+    display: none;
   }
   .filters button {
-    @apply min-h-9 rounded-full border border-primary/25 bg-card/70 px-4 py-1.5 text-xs font-bold text-primary transition-colors hover:bg-card;
+    @apply shrink-0 whitespace-nowrap min-h-9 rounded-full border border-primary/25 bg-card/70 px-4 py-1.5 text-xs font-bold text-primary transition-colors hover:bg-card;
   }
   .filters button[aria-pressed="true"] {
     @apply border-brand bg-brand text-white;
@@ -766,7 +786,7 @@
 
   /* ドキュメント */
   .docs-layout {
-    @apply grid grid-cols-1 min-w-0 max-w-full items-start gap-10 py-10 lg:grid-cols-[200px_minmax(0,1fr)] xl:grid-cols-[200px_minmax(0,1fr)_190px];
+    @apply grid grid-cols-1 min-w-0 max-w-full items-start gap-10 py-10 lg:grid-cols-[200px_minmax(0,1fr)] 2xl:grid-cols-[200px_minmax(0,1fr)_190px];
   }
   .docs-sidebar {
     @apply hidden lg:sticky lg:top-28 lg:block;
@@ -803,7 +823,7 @@
     @apply mt-6;
   }
   .desktop-toc {
-    @apply sticky top-28 hidden xl:block;
+    @apply sticky top-28 hidden 2xl:block;
     max-height: calc(100dvh - 8rem);
     overflow-y: auto;
     overscroll-behavior: contain;
@@ -824,7 +844,7 @@
     @apply pl-3;
   }
   .mobile-toc {
-    @apply mb-8 rounded-xl border border-line p-4 xl:hidden;
+    @apply mb-8 rounded-xl border border-line p-4 2xl:hidden;
   }
   .mobile-toc summary {
     @apply text-sm font-bold text-primary;
@@ -861,12 +881,23 @@
 }
 
 /* Zenn公式CSSに対するサイト側の調整 */
-.doc-content.znc {
+.doc-content {
   font-family: var(--font-sans);
   color: var(--color-ink);
   line-height: 1.95;
   min-width: 0;
   max-width: 100%;
+  word-break: normal;
+  overflow-wrap: break-word;
+  line-break: strict;
+  text-autospace: normal;
+}
+.docs-article .doc-content {
+  line-height: 1.7;
+}
+.doc-content li {
+  line-height: 1.68;
+  margin-block: 0.35em;
 }
 html[data-theme="dark"] .doc-content.znc {
   --c-bg-base: var(--color-card);
@@ -889,9 +920,37 @@ html[data-theme="dark"] .doc-content.znc {
   line-height: 1.6;
   max-width: 100%;
   overflow-x: auto;
-  overflow-wrap: anywhere;
+  overflow-wrap: break-word;
   word-break: normal;
   scrollbar-width: thin;
+}
+.doc-content.znc h4 {
+  font-size: 1.05rem;
+  font-weight: 700;
+  margin-top: 1.75rem;
+  margin-bottom: 0.5rem;
+  color: var(--color-ink);
+}
+.doc-content :not(pre) > code {
+  font-size: 0.875em;
+  padding: 0.1em 0.35em;
+  border-radius: 0.25rem;
+  background-color: rgba(45, 90, 70, 0.06);
+  border: 1px solid rgba(45, 90, 70, 0.15);
+  color: var(--color-ink);
+  vertical-align: baseline;
+  word-break: break-word;
+}
+.doc-content h1 code,
+.doc-content h2 code,
+.doc-content h3 code,
+.doc-content h4 code {
+  background: transparent;
+  border: none;
+  padding: 0;
+  font-size: 0.95em;
+  font-weight: inherit;
+  color: inherit;
 }
 .doc-content.znc img {
   border-radius: 0.75rem;
@@ -1040,6 +1099,11 @@ html[data-theme="dark"] .code-block {
   border-color: #2a313d;
   background: #0e131b;
   box-shadow: 0 10px 28px -8px rgba(0, 0, 0, 0.55);
+}
+html[data-theme="dark"] .doc-content :not(pre) > code {
+  background-color: rgba(107, 196, 154, 0.1);
+  border-color: rgba(107, 196, 154, 0.22);
+  color: var(--color-ink);
 }
 .doc-content.znc .code-block-container .code-block {
   margin: 0;

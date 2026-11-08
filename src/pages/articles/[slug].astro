@@ -4,6 +4,7 @@ import 'zenn-content-css/lib/index.css';
 import '../../styles/articles.css';
 import CopyMarkdownButton from '../../components/CopyMarkdownButton.astro';
 import Reactions from '../../components/Reactions';
+import ShareButton from '../../components/ShareButton.astro';
 import { site } from '../../config/site';
 import Base from '../../layouts/Base.astro';
 import { getArticleDocuments, getArticles } from '../../lib/articles.server';
@@ -92,7 +93,10 @@ const relatedArticles = findRelatedArticles(getArticles(), {
         <p class="lead">{displayDescription}</p>
         <div class="mt-4 flex flex-wrap items-center justify-between gap-4">
           <Reactions article={article} showFetchedAt />
-          <CopyMarkdownButton markdown={article.markdown} />
+          <div class="flex flex-wrap items-center gap-2">
+            <ShareButton title={article.title} text={displayDescription} />
+            <CopyMarkdownButton markdown={article.markdown} />
+          </div>
         </div>
       </header>
 
@@ -138,7 +142,10 @@ const relatedArticles = findRelatedArticles(getArticles(), {
 
       <footer class="article-end">
         <p>この記事へのリアクション・コメントは各掲載先へ。</p>
-        <Reactions article={article} showFetchedAt />
+        <div class="flex flex-wrap items-center justify-between gap-4">
+          <Reactions article={article} showFetchedAt />
+          <ShareButton title={article.title} text={displayDescription} />
+        </div>
         <div class="mt-6">
           <a class="text-link" href="/articles/">← すべての技術記事を見る</a>
         </div>

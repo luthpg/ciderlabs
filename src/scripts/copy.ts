@@ -1,4 +1,5 @@
-let toastTimer: ReturnType<typeof setTimeout>;
+import { showToast } from './toast';
+
 const buttonTimers = new WeakMap<
   HTMLButtonElement,
   ReturnType<typeof setTimeout>
@@ -19,7 +20,6 @@ document.addEventListener('click', async (event) => {
 
   if (!value) return;
 
-  const status = document.querySelector<HTMLElement>('#copy-status');
   const label = button.querySelector<HTMLElement>('.copy-label');
   const defaultLabel =
     button.dataset.defaultLabel ?? label?.textContent ?? 'コピー';
@@ -30,9 +30,7 @@ document.addEventListener('click', async (event) => {
 
   try {
     await navigator.clipboard.writeText(value);
-    if (status) {
-      status.textContent = 'クリップボードにコピーしました';
-    }
+    showToast('クリップボードにコピーしました');
     button.dataset.copied = 'true';
     if (label) {
       label.textContent = button.dataset.copiedLabel ?? 'コピー済み';
@@ -55,18 +53,6 @@ document.addEventListener('click', async (event) => {
     }, 2000);
     buttonTimers.set(button, nextTimer);
   } catch {
-    if (status) {
-      status.textContent =
-        'コピーできませんでした。テキストを選択してコピーしてください。';
-    }
-  }
-
-  if (status) {
-    clearTimeout(toastTimer);
-    status.classList.add('visible');
-
-    toastTimer = setTimeout(() => {
-      status.classList.remove('visible');
-    }, 2500);
+    showToast('コピーできませんでした。テキストを選択してコピーしてください。');
   }
 });
